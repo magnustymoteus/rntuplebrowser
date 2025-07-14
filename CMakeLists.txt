@@ -3,8 +3,6 @@ project(RCanvasDemo VERSION 1.0 LANGUAGES CXX)
 
 find_package(ROOT REQUIRED COMPONENTS RIO ROOTGpadv7 ROOTBrowserv7)
 
-message(STATUS "Found ROOT ${ROOT_VERSION} at ${ROOT_DIR}")
-
 include_directories(${ROOT_INCLUDE_DIRS})
 link_directories(${ROOT_LIBRARY_DIRS})
 
