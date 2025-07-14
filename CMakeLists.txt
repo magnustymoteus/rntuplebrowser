@@ -1,22 +1,18 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-project(rntuplebrowser)
+cmake_minimum_required(VERSION 3.14)
+project(RCanvasDemo VERSION 1.0 LANGUAGES CXX)
 
-find_package(ROOT CONFIG REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS RIO ROOTGpadv7 ROOTBrowserv7)
 
-add_library(RNTupleBrowser SHARED RNTupleBrowser.cxx)
-target_include_directories(RNTupleBrowser
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-target_link_libraries(RNTupleBrowser
-        PUBLIC
-        ROOT::Core
-        ROOT::RIO
+message(STATUS "Found ROOT ${ROOT_VERSION} at ${ROOT_DIR}")
+
+include_directories(${ROOT_INCLUDE_DIRS})
+link_directories(${ROOT_LIBRARY_DIRS})
+
+add_executable(${PROJECT_NAME} main.cpp)
+
+target_link_libraries(RCanvasDemo PRIVATE
+        ROOT::RIO ROOT::ROOTGpadv7 ROOT::ROOTBrowserv7
 )
 
-add_executable(Main Main.cxx)
-target_link_libraries(Main
-        RNTupleBrowser
-        ROOT::Core
-        ROOT::RIO
-)
+# Use C++17
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
