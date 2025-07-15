@@ -2,6 +2,8 @@
 #include <ROOT/RBrowser.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleReader.hxx>
+#include "ROOT/RBox.hxx"
+#include "ROOT/RText.hxx"
 #include <TFile.h>
 #include <TApplication.h>
 
@@ -9,6 +11,9 @@ using namespace ROOT::Experimental;
 
 void DisplayCanvas() {
     auto canvas = RCanvas::Create("Hello world!");
+    auto box1 = canvas->Draw<RBox>(RPadPos(0.25_normal, 0.25_normal), RPadPos(0.75_normal, 0.75_normal));
+    auto text = canvas->Add<RText>(RPadPos(0.25_normal, 0.74_normal), "SomeField");
+    text->text.align = RAttrText::kLeftBottom;
     canvas->Show();
 }
 void DisplayBrowser() {
