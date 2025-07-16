@@ -7,17 +7,20 @@
 
 using namespace ROOT::Experimental;
 
-void DisplayCanvas() {
-    auto browser = RNTupleBrowser("poster_tuple", "../example_file.root");
-    browser.Browse();
+void DisplayCanvas()
+{
+   auto browser = RNTupleBrowser("new_tuple", "/home/magnustymoteus/Desktop/root_macros/rntuple/new_file.root");
+   browser.Browse();
 }
-void DisplayBrowser() {
-    auto browser = new ROOT::RBrowser("Hello there!");
+void DisplayBrowser()
+{
+   auto browser = new ROOT::RBrowser("Hello there!");
 }
-int main(int argc, char** argv) {
-    TApplication app("ROOT Application", &argc, argv);
-    DisplayCanvas();
-    //DisplayBrowser();
-    app.Run();
-    return 0;
+int main(int argc, char **argv)
+{
+   TApplication app("ROOT Application", &argc, argv);
+   DisplayCanvas();
+   // DisplayBrowser();
+   app.Run();
+   return 0;
 }
