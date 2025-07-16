@@ -13,6 +13,7 @@ class RNTupleBrowser {
     private:
         const std::shared_ptr<RCanvas> _canvas;
         const std::unique_ptr<RNTupleInspector> _inspector;
+        void Treemap() const;
     public:
     RNTupleBrowser(const std::string_view tupleName, const std::string_view storage)
 : _canvas(RCanvas::Create("RNTupleBrowser")), _inspector(RNTupleInspector::Create(tupleName, storage)) {}
