@@ -4,6 +4,7 @@
 #include <ROOT/RNTupleReader.hxx>
 #include "ROOT/RBox.hxx"
 #include "ROOT/RText.hxx"
+#include "RNTupleBrowser.hxx"
 #include <TFile.h>
 #include <TApplication.h>
 
@@ -14,6 +15,8 @@ void DisplayCanvas() {
     auto box1 = canvas->Draw<RBox>(RPadPos(0.25_normal, 0.25_normal), RPadPos(0.75_normal, 0.75_normal));
     auto text = canvas->Add<RText>(RPadPos(0.25_normal, 0.74_normal), "SomeField");
     text->text.align = RAttrText::kLeftBottom;
+    auto browser = RNTupleBrowser();
+    browser.Test();
     canvas->Show();
 }
 void DisplayBrowser() {
