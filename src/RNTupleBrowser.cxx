@@ -7,8 +7,8 @@
 #include <ROOT/RText.hxx>
 #include <iostream>
 
-void RNTupleBrowser::Treemap(const ROOT::RFieldDescriptor &fieldDesc, const float xBegin, const float xEnd,
-                             const int &depth) const
+void RNTupleBrowser::Treemap(const ROOT::RFieldDescriptor &fieldDesc, const std::pair<float, float> begin,
+                             const std::pair<float, float> end, const int &depth) const
 {
    std::uint64_t size = 0;
    const auto &descriptor = _inspector->GetDescriptor();
@@ -21,32 +21,35 @@ void RNTupleBrowser::Treemap(const ROOT::RFieldDescriptor &fieldDesc, const floa
       size = _inspector->GetFieldTreeInspector(fieldDesc.GetId()).GetCompressedSize();
    }
 
-   float currentX = xBegin;
+   auto toPad = [&](float u) { return 0.25f + u * 0.5f; };
+   const float textDepthOffset = 0.035f, textSizeFactor = 0.005f;
 
-   const float offset = 0.25f;           // offset for canvas coordinates
-   const float scale = 0.5f;             // scaling from logical to canvas coordinates
-   const float yBottom = 0.25f;          // fixed bottom y coordinate
-   const float yTop = 0.75f;             // fixed top y coordinate
-   const float textDepthOffset = 0.035f; // vertical offset per depth level for text.
-   const float textSizeFactor = 0.005f;  // text size scaling factor
-
-   const float canvasXBegin = offset + xBegin * scale;
-   const float canvasXEnd = offset + xEnd * scale;
-
-   _canvas->Draw<RBox>(RPadPos(canvasXBegin, yBottom), RPadPos(canvasXEnd, yTop));
-
-   auto text = _canvas->Add<RText>(RPadPos(canvasXBegin, yTop - textDepthOffset * depth),
+   const std::pair<float, float> drawBegin = {toPad(begin.first), toPad(begin.second)};
+   const std::pair<float, float> drawEnd = {toPad(end.first), toPad(end.second)};
+   _canvas->Draw<RBox>(RPadPos(drawBegin.first, drawBegin.second), RPadPos(drawEnd.first, drawEnd.second));
+   auto text = _canvas->Add<RText>(RPadPos(drawBegin.first, drawBegin.second /*- textDepthOffset * depth*/),
                                    fieldDesc.GetFieldName() + ": " + std::to_string(size));
    text->text.align = RAttrText::kLeftBottom;
    text->text.size = textSizeFactor * size;
 
+   std::pair<float, float> current = begin;
+   const bool sliceVertical = depth % 2 == 0;
    for (const auto &childFldId : fieldDesc.GetLinkIds()) {
       const auto &childFldDesc = descriptor.GetFieldDescriptor(childFldId);
       const std::uint64_t childSize = _inspector->GetFieldTreeInspector(childFldId).GetCompressedSize();
       if (childSize > 0) {
-         const float nextX = currentX + static_cast<float>(childSize) / static_cast<float>(size);
-         Treemap(childFldDesc, currentX, nextX, depth + 1);
-         currentX = xEnd * nextX;
+         std::pair<float, float> nextBegin = begin, nextEnd = end;
+         const float frac = static_cast<float>(childSize) / static_cast<float>(size);
+         if (sliceVertical) {
+            nextBegin.first = current.first;
+            nextEnd.first = current.first + frac * (end.first - begin.first);
+            current.first = nextEnd.first;
+         } else {
+            nextBegin.second = current.second;
+            nextEnd.second = current.second + frac * (end.second - begin.second);
+            current.second = nextEnd.second;
+         }
+         Treemap(childFldDesc, nextBegin, nextEnd, depth + 1);
       }
    }
 }

@@ -13,8 +13,8 @@ class RNTupleBrowser {
 private:
    const std::shared_ptr<RCanvas> _canvas;
    const std::unique_ptr<RNTupleInspector> _inspector;
-   void Treemap(const ROOT::RFieldDescriptor &fieldDesc, const float xBegin = 0.0f, const float xEnd = 1.0,
-                const int &depth = 0) const;
+   void Treemap(const ROOT::RFieldDescriptor &fieldDesc, const std::pair<float, float> begin = {0.0f, 0.0f},
+                const std::pair<float, float> end = {1.0f, 1.0f}, const int &depth = 0) const;
 
 public:
    RNTupleBrowser(const std::string_view tupleName, const std::string_view storage)
