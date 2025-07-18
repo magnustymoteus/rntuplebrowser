@@ -9,7 +9,7 @@ using namespace ROOT::Experimental;
 
 void DisplayCanvas()
 {
-   auto browser = RNTupleBrowser("some_tuple2", "/home/patryk/Desktop/onboarding/RNTuple/tuple_file2.root");
+   auto browser = RNTupleBrowser("poster_tuple", "../example_file.root");
    browser.Browse();
 }
 int main(int argc, char **argv)
