@@ -14,17 +14,17 @@ public:
       : RPadBase("treemap"),
         fInspector(RNTupleInspector::Create(tupleName, storage)),
         fRootField(fInspector->GetDescriptor().GetFieldZero()),
-        _canvas(canvasArg)
+        fCanvas(canvasArg)
    {
       DrawTreeMap(fRootField, {0, 0}, {1, 1}, 0);
    }
-   RCanvas *GetCanvas() override { return _canvas.get(); }
-   const RCanvas *GetCanvas() const override { return _canvas.get(); }
+   RCanvas *GetCanvas() override { return fCanvas.get(); }
+   const RCanvas *GetCanvas() const override { return fCanvas.get(); }
 
 private:
    std::unique_ptr<RNTupleInspector> fInspector;
    const ROOT::RFieldDescriptor &fRootField;
-   const std::shared_ptr<RCanvas> _canvas;
+   const std::shared_ptr<RCanvas> fCanvas;
 
    void DrawTreeMap(const ROOT::RFieldDescriptor &fieldDesc, const std::pair<float, float> &begin,
                     const std::pair<float, float> &end, int depth) const;

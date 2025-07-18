@@ -27,10 +27,10 @@ void RTreeMap::DrawTreeMap(const ROOT::RFieldDescriptor &fieldDesc, const std::p
    const std::pair<float, float> drawBegin = {toPad(begin.first), toPad(begin.second)};
    const std::pair<float, float> drawEnd = {toPad(end.first), toPad(end.second)};
 
-   _canvas->Draw<RBox>(RPadPos(drawBegin.first, drawBegin.second), RPadPos(drawEnd.first, drawEnd.second));
+   fCanvas->Draw<RBox>(RPadPos(drawBegin.first, drawBegin.second), RPadPos(drawEnd.first, drawEnd.second));
 
    auto text =
-      _canvas->Add<RText>(RPadPos((drawBegin.first + drawEnd.first) / 2.0f, (drawBegin.second + drawEnd.second) / 2.0f),
+      fCanvas->Add<RText>(RPadPos((drawBegin.first + drawEnd.first) / 2.0f, (drawBegin.second + drawEnd.second) / 2.0f),
                           fieldDesc.GetFieldName() + " (" + std::to_string(size) + ")");
    text->text.align = RAttrText::kCenter;
    text->text.size = textSizeFactor / (depth + 1);

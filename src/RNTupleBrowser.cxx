@@ -8,6 +8,6 @@
 
 void RNTupleBrowser::Browse() const
 {
-   _canvas->Draw<RTreeMap>(_canvas, _tupleName, _storage);
-   _canvas->Show();
+   fCanvas->Draw<RTreeMap>(fCanvas, fTupleName, fStorage);
+   fCanvas->Show();
 }
