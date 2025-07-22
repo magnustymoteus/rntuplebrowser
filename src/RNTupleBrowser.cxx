@@ -4,29 +4,50 @@
 #include <RNTupleBrowser.hxx>
 #include <ROOT/RCanvas.hxx>
 #include <iostream>
+#include <queue>
 
-std::shared_ptr<const RTreeMappable> RNTupleBrowser::CreateRTreeMappable(const ROOT::RFieldDescriptor &fieldDesc) const
+std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMappable() const
 {
-   std::vector<std::shared_ptr<const RTreeMappable>> children;
+   std::vector<RTreeMappable> nodes;
    const auto &descriptor = fInspector->GetDescriptor();
-   const bool isRoot = fieldDesc.GetParentId() == ROOT::kInvalidDescriptorId;
-   std::uint64_t size = 0;
+   const auto *root = &descriptor.GetFieldZero();
 
-   for (const auto &childId : fieldDesc.GetLinkIds()) {
-      const auto &childFldDesc = descriptor.GetFieldDescriptor(childId);
-      auto child = CreateRTreeMappable(childFldDesc);
-      if (isRoot)
-         size += child->GetSize();
-      children.push_back(child);
+   size_t rootSize = 0;
+   for (const auto &childId : root->GetLinkIds()) {
+      rootSize += fInspector->GetFieldTreeInspector(childId).GetCompressedSize();
    }
 
-   if (!isRoot)
-      size = fInspector->GetFieldTreeInspector(fieldDesc.GetId()).GetCompressedSize();
-   return std::make_shared<RTreeMappable>(fieldDesc.GetFieldName(), size, children);
+   std::queue<const ROOT::RFieldDescriptor *> queue;
+   queue.push(root);
+   while (!queue.empty()) {
+      size_t levelSize = queue.size();
+      size_t levelChildrenStart = nodes.size() + levelSize;
+      for (size_t i = 0; i < levelSize; ++i) {
+         const auto *fldDesc = queue.front();
+         queue.pop();
+
+         const auto &children = fldDesc->GetLinkIds();
+         size_t nChildren = children.size();
+         size_t childrenIdx = levelChildrenStart;
+         uint64_t size = (root->GetId() != fldDesc->GetId())
+                            ? fInspector->GetFieldTreeInspector(fldDesc->GetId()).GetCompressedSize()
+                            : rootSize;
+
+         nodes.push_back(RTreeMappable(fldDesc->GetFieldName(), size, childrenIdx, nChildren));
+
+         for (const auto childId : children) {
+            const auto *childFldDesc = &descriptor.GetFieldDescriptor(childId);
+            queue.push(childFldDesc);
+         }
+         levelChildrenStart += nChildren;
+      }
+   }
+   return nodes;
 }
 
 void RNTupleBrowser::Browse() const
 {
-   fCanvas->Draw<RTreeMap>(fCanvas, CreateRTreeMappable(fInspector->GetDescriptor().GetFieldZero()));
+
+   fCanvas->Draw<RTreeMap>(fCanvas, CreateRTreeMappable());
    fCanvas->Show();
 }

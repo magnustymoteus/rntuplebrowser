@@ -13,34 +13,35 @@ class RTreeMappable {
 public:
    const std::string &GetName() const { return fName; }
    const std::uint64_t GetSize() const { return fSize; }
-   const std::vector<std::shared_ptr<const RTreeMappable>> &GetChildren() const { return fChildren; }
-   RTreeMappable(const std::string name, const std::uint64_t size,
-                 const std::vector<std::shared_ptr<const RTreeMappable>> children)
-      : fName(name), fSize(size), fChildren(children)
+   const std::uint64_t GetNChildren() const { return fNChildren; }
+   const std::uint64_t GetChildrenIdx() const { return fChildrenIdx; }
+
+   RTreeMappable(const std::string name, const std::uint64_t size, const std::uint64_t childrenIdx,
+                 const std::uint64_t nChildren)
+      : fName(name), fSize(size), fChildrenIdx(childrenIdx), fNChildren(nChildren)
    {
    }
 
 private:
-   const std::vector<std::shared_ptr<const RTreeMappable>> fChildren;
-   std::string fName;
-   std::uint64_t fSize;
+   const std::uint64_t fChildrenIdx, fNChildren, fSize;
+   const std::string fName;
 };
 
 class RTreeMap : public RPadBase {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::shared_ptr<const RTreeMappable> &root)
-      : RPadBase("treemap"), fRoot(root), fCanvas(canvasArg)
+   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::vector<RTreeMappable> nodes)
+      : RPadBase("treemap"), fCanvas(canvasArg), fNodes(nodes)
    {
-      DrawTreeMap(fRoot, {0, 0}, {1, 1}, 0);
+      DrawTreeMap(fNodes[0], {0, 0}, {1, 1}, 0);
    }
    RCanvas *GetCanvas() override { return fCanvas.get(); }
    const RCanvas *GetCanvas() const override { return fCanvas.get(); }
 
 private:
-   const std::shared_ptr<const RTreeMappable> &fRoot;
+   const std::vector<RTreeMappable> fNodes;
    const std::shared_ptr<RCanvas> fCanvas;
-   void DrawTreeMap(const std::shared_ptr<const RTreeMappable> &currentElem, const std::pair<float, float> &begin,
-                    const std::pair<float, float> &end, int depth) const;
+   void DrawTreeMap(const RTreeMappable &elem, const std::pair<float, float> &begin, const std::pair<float, float> &end,
+                    int depth) const;
 };
 
 #endif

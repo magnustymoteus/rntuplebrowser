@@ -14,7 +14,7 @@ class RNTupleBrowser {
 private:
    const std::shared_ptr<RCanvas> fCanvas;
    const std::unique_ptr<RNTupleInspector> fInspector;
-   std::shared_ptr<const RTreeMappable> CreateRTreeMappable(const ROOT::RFieldDescriptor &fieldDesc) const;
+   std::vector<RTreeMappable> CreateRTreeMappable() const;
 
 public:
    RNTupleBrowser(const std::string_view tupleName, const std::string_view storage)
