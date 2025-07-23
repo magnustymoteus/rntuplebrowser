@@ -33,9 +33,11 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMappable() const
                             ? fInspector->GetFieldTreeInspector(fldDesc->GetId()).GetCompressedSize()
                             : rootSize;
 
-         const auto hash = std::hash<std::string>()(fldDesc->GetTypeName());
-         const auto color = RColor((hash & 0xFF0000) >> 16, (hash & 0x00FF00) >> 8,
-                                   hash & 0x0000FF); // hash field type string and turn it into RGB
+         /* hash string into RGB color with FNV-1a: used for speed and diffusion*/
+         uint64_t h = 14695981039346656037ULL;
+         for (char c : fldDesc->GetTypeName())
+            h = (h ^ static_cast<uint8_t>(c)) * 1099511628211ULL;
+         const auto color = RColor((h >> 16) & 0xFF, (h >> 8) & 0xFF, h & 0xFF);
          nodes.push_back(RTreeMappable(fldDesc->GetFieldName(), size, color, childrenIdx, nChildren));
 
          for (const auto childId : children) {
