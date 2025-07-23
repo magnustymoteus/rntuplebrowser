@@ -12,7 +12,9 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, const std::pair<float, flo
    const std::array<float, 2> drawBegin = {toPad(begin.first), toPad(begin.second)};
    const std::array<float, 2> drawEnd = {toPad(end.first), toPad(end.second)};
 
-   fCanvas->Draw<RBox>(RPadPos(drawBegin[0], drawBegin[1]), RPadPos(drawEnd[0], drawEnd[1]));
+   auto box = fCanvas->Add<RBox>(RPadPos(drawBegin[0], drawBegin[1]), RPadPos(drawEnd[0], drawEnd[1]));
+   box->fill.color = elem.GetColor();
+   box->fill.style = RAttrFill::kSolid;
    const std::uint64_t size = elem.GetSize();
    auto text = fCanvas->Add<RText>(RPadPos((drawBegin[0] + drawEnd[0]) / 2.0f, (drawBegin[1] + drawEnd[1]) / 2.0f),
                                    elem.GetName() + " (" + std::to_string(size) + ")");
