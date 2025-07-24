@@ -31,15 +31,15 @@ private:
 
 class RTreeMap : public RDrawable {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::vector<RTreeMappable> nodes)
+   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::vector<RTreeMappable> &nodes)
       : RDrawable("treemap"), fCanvas(canvasArg), fNodes(nodes)
    {
       DrawTreeMap(fNodes[0], {0, 0}, {1, 1}, 0);
    }
 
 private:
-   const std::vector<RTreeMappable> fNodes;
-   const std::shared_ptr<RCanvas> fCanvas;
+   std::vector<RTreeMappable> fNodes;
+   std::shared_ptr<RCanvas> fCanvas;
    void DrawTreeMap(const RTreeMappable &elem, const std::pair<float, float> &begin, const std::pair<float, float> &end,
                     int depth) const;
 };

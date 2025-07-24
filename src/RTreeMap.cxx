@@ -20,7 +20,6 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, const std::pair<float, flo
                                    elem.GetName() + " (" + std::to_string(size) + ")");
    text->text.align = RAttrText::kCenter;
    text->text.size = textSizeFactor / (depth + 1);
-   text->text.angle = (sliceVertical) ? 0 : 90;
 
    float currentPos = (sliceVertical) ? begin.first : begin.second;
    for (std::uint64_t i = 0; i < elem.GetNChildren(); ++i) {
