@@ -6,6 +6,15 @@
 #include <iostream>
 #include <queue>
 
+/* hash string into RGB color with FNV-1a: used for speed and diffusion*/
+uint64_t ComputeFnv(const std::string &str)
+{
+   uint64_t h = 14695981039346656037ULL;
+   for (char c : str)
+      h = (h ^ static_cast<uint8_t>(c)) * 1099511628211ULL;
+   return h;
+}
+
 std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMappable() const
 {
    std::vector<RTreeMappable> nodes;
@@ -33,13 +42,9 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMappable() const
                             ? fInspector->GetFieldTreeInspector(fldDesc->GetId()).GetCompressedSize()
                             : rootSize;
 
-         /* hash string into RGB color with FNV-1a: used for speed and diffusion*/
-         uint64_t h = 14695981039346656037ULL;
-         for (char c : fldDesc->GetTypeName())
-            h = (h ^ static_cast<uint8_t>(c)) * 1099511628211ULL;
-         const auto color = RColor((h >> 16) & 0xFF, (h >> 8) & 0xFF, h & 0xFF);
+         const uint64_t &hash = ComputeFnv(fldDesc->GetTypeName());
+         const auto color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
          nodes.push_back(RTreeMappable(fldDesc->GetFieldName(), size, color, childrenIdx, nChildren));
-
          for (const auto childId : children) {
             const auto *childFldDesc = &descriptor.GetFieldDescriptor(childId);
             queue.push(childFldDesc);

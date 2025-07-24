@@ -12,10 +12,10 @@ using namespace ROOT::Experimental;
 class RTreeMappable {
 public:
    const std::string &GetName() const { return fName; }
-   const std::uint64_t GetSize() const { return fSize; }
-   const std::uint64_t GetNChildren() const { return fNChildren; }
-   const std::uint64_t GetChildrenIdx() const { return fChildrenIdx; }
-   const RColor GetColor() const { return fColor; }
+   std::uint64_t GetSize() const { return fSize; }
+   std::uint64_t GetNChildren() const { return fNChildren; }
+   std::uint64_t GetChildrenIdx() const { return fChildrenIdx; }
+   RColor GetColor() const { return fColor; }
 
    RTreeMappable(const std::string name, const std::uint64_t size, const RColor color, const std::uint64_t childrenIdx,
                  const std::uint64_t nChildren)
@@ -24,9 +24,9 @@ public:
    }
 
 private:
-   const std::uint64_t fChildrenIdx, fNChildren, fSize;
-   const std::string fName;
-   const RColor fColor;
+   std::uint64_t fChildrenIdx, fNChildren, fSize;
+   std::string fName;
+   RColor fColor;
 };
 
 class RTreeMap : public RDrawable {
