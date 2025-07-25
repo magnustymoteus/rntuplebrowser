@@ -40,8 +40,8 @@ public:
 private:
    std::vector<RTreeMappable> fNodes;
    std::shared_ptr<RCanvas> fCanvas;
-   void DrawTreeMap(const RTreeMappable &elem, const std::pair<float, float> &begin, const std::pair<float, float> &end,
-                    int depth) const;
+   void
+   DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> begin, std::pair<float, float> end, int depth) const;
 };
 
 #endif
