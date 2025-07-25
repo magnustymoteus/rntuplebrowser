@@ -7,7 +7,7 @@
 #include <queue>
 
 /* hash string into RGB color with FNV-1a: used for speed and diffusion*/
-uint64_t ComputeFnv(const std::string &str)
+static uint64_t ComputeFnv(const std::string &str)
 {
    uint64_t h = 14695981039346656037ULL;
    for (char c : str)
