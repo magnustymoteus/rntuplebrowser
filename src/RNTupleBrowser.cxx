@@ -69,9 +69,9 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::map<std::string, 
             for (const auto childId : children) {
                queue.push({childId, 1});
             }
-            const auto &columns = fInspector->GetColumnIds(fldDesc.GetId());
-            children.insert(children.end(), columns.begin(), columns.end());
-            for (const auto &columnId : columns) {
+            for (const auto &columnDesc : descriptor.GetColumnIterable(fldDesc.GetId())) {
+               const auto &columnId = columnDesc.GetPhysicalId();
+               children.push_back(columnId);
                queue.push({columnId, 0});
             }
             nChildren = children.size();
