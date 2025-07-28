@@ -30,7 +30,6 @@ void RTreeMap::DrawLegend() const
 {
    uint8_t i = 0;
    for (const auto &entry : fColumnLegend) {
-      std::cout << entry.first << std::endl;
       const auto &posY = 0.75f - i * 0.05f;
       auto box = fCanvas->Add<RBox>(RPadPos(0.75f, posY), RPadPos(0.75f + 0.05f, posY - 0.05F));
       box->fill.color = entry.second;
