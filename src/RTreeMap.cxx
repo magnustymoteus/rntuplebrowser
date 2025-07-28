@@ -26,6 +26,24 @@ static std::string GetDataStr(const uint64_t &bytes)
    return stream.str() + unit;
 }
 
+void RTreeMap::DrawLegend() const
+{
+   uint8_t i = 0;
+   for (const auto &entry : fColumnLegend) {
+      std::cout << entry.first << std::endl;
+      const auto &posY = 0.75f - i * 0.05f;
+      auto box = fCanvas->Add<RBox>(RPadPos(0.75f, posY), RPadPos(0.75f + 0.05f, posY - 0.05F));
+      box->fill.color = entry.second;
+      box->fill.style = RAttrFill::kSolid;
+
+      auto text = fCanvas->Add<RText>(RPadPos(0.75f + 0.05f, posY - 0.025f), entry.first);
+      text->text.align = RAttrText::kLeftCenter;
+      text->text.size = TEXT_SIZE_FACTOR;
+
+      i++;
+   }
+}
+
 // Draws a tree map visualization for the given element recursively
 void RTreeMap::DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> begin, std::pair<float, float> end,
                            int depth) const

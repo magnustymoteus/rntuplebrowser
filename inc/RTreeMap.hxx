@@ -31,17 +31,21 @@ private:
 
 class RTreeMap : public RDrawable {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::vector<RTreeMappable> &nodes)
-      : RDrawable("treemap"), fCanvas(canvasArg), fNodes(nodes)
+   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::vector<RTreeMappable> &nodes,
+            const std::map<std::string, RColor> &columnLegend)
+      : RDrawable("treemap"), fCanvas(canvasArg), fNodes(nodes), fColumnLegend(columnLegend)
    {
       DrawTreeMap(fNodes[0], {0, 0}, {1, 1}, 0);
+      DrawLegend();
    }
 
 private:
    std::vector<RTreeMappable> fNodes;
    std::shared_ptr<RCanvas> fCanvas;
+   const std::map<std::string, RColor> &fColumnLegend;
    void
    DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> begin, std::pair<float, float> end, int depth) const;
+   void DrawLegend() const;
 };
 
 #endif

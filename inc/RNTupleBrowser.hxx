@@ -15,7 +15,8 @@ private:
    const std::unique_ptr<RNTupleInspector> fInspector;
    const ROOT::RFieldDescriptor &fRootFld;
    size_t fRootSize;
-   std::vector<RTreeMappable> CreateRTreeMap() const;
+
+   std::vector<RTreeMappable> CreateRTreeMap(std::map<std::string, RColor> &columnLegend) const;
    RTreeMappable CreateRTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
                                      const std::uint64_t &nChildren) const;
    RTreeMappable
