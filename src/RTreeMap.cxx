@@ -4,7 +4,7 @@
 #include <iomanip>
 
 #define TREEMAP_TEXTCOLOR RColor(255, 255, 255)
-constexpr float HEADER_HEIGHT = 0.05f;
+constexpr float INDENTATION_OFFSET = 0.05f;
 constexpr float PAD_TEXT_OFFSET = 0.01f;
 constexpr float TEXT_SIZE_FACTOR = 0.02f;
 
@@ -31,8 +31,12 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> be
                            int depth) const
 {
    const bool sliceVertical = depth % 2 == 0;
-   if (elem.GetNChildren() > 0)
-      end.second -= HEADER_HEIGHT;
+   if (elem.GetNChildren() > 0) {
+      end.first -= INDENTATION_OFFSET;
+      end.second -= INDENTATION_OFFSET;
+      begin.first += INDENTATION_OFFSET;
+      begin.second += INDENTATION_OFFSET;
+   }
 
    auto toPad = [](float u) { return 0.25f + u * 0.5f; };
    std::array<float, 2> drawBegin = {toPad(begin.first), toPad(begin.second)};
@@ -41,17 +45,18 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> be
    const std::string label = elem.GetName() + " (" + GetDataStr(size) + ")";
 
    if (elem.GetNChildren() > 0) {
-      auto windowBox =
-         fCanvas->Add<RBox>(RPadPos(drawBegin[0], drawEnd[1]), RPadPos(drawEnd[0], drawEnd[1] + HEADER_HEIGHT * 0.5f));
+      auto windowBox = fCanvas->Add<RBox>(RPadPos(drawBegin[0], drawBegin[1]), RPadPos(drawEnd[0], drawEnd[1]));
       windowBox->fill.color = RColor(100, 100, 100);
       windowBox->fill.style = RAttrFill::kSolid;
+      windowBox->border.color = RColor::kWhite;
 
-      AddStyledText(fCanvas.get(), RPadPos(drawBegin[0] + PAD_TEXT_OFFSET, drawEnd[1] + HEADER_HEIGHT * 0.25f), label,
-                    RAttrText::kLeftCenter);
+      AddStyledText(fCanvas.get(), RPadPos(drawBegin[0] + PAD_TEXT_OFFSET, drawEnd[1] + INDENTATION_OFFSET * 0.25f),
+                    label, RAttrText::kLeftCenter);
    } else {
       auto box = fCanvas->Add<RBox>(RPadPos(drawBegin[0], drawBegin[1]), RPadPos(drawEnd[0], drawEnd[1]));
       box->fill.color = elem.GetColor();
       box->fill.style = RAttrFill::kSolid;
+      box->border.color = RColor::kWhite;
 
       AddStyledText(fCanvas.get(), RPadPos((drawBegin[0] + drawEnd[0]) / 2.0f, (drawBegin[1] + drawEnd[1]) / 2.0f),
                     label, RAttrText::kCenter);
