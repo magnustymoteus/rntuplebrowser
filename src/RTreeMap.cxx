@@ -1,19 +1,29 @@
 #include "RTreeMap.hxx"
 #include <ROOT/RBox.hxx>
 #include <ROOT/RText.hxx>
+#include <iomanip>
 
 #define TREEMAP_TEXTCOLOR RColor(255, 255, 255)
 constexpr float HEADER_HEIGHT = 0.05f;
 constexpr float PAD_TEXT_OFFSET = 0.01f;
 constexpr float TEXT_SIZE_FACTOR = 0.02f;
 
-// Helper to add text with consistent styling
 inline void AddStyledText(RCanvas *canvas, RPadPos pos, const std::string &content, RAttrText::EAlign align)
 {
    auto text = canvas->Add<RText>(pos, content);
    text->text.align = align;
    text->text.size = TEXT_SIZE_FACTOR;
    text->text.color = TREEMAP_TEXTCOLOR;
+}
+static std::string GetDataStr(const uint64_t &bytes)
+{
+   const std::vector<std::string> &units{"B", "KB", "MB", "GB", "TB", "PB", "EB"};
+   const uint64_t &order = std::log10(bytes) / 3.0f;
+   const std::string &unit = units[order];
+   const float &finalSize = static_cast<float>(bytes) / std::pow(1000, order);
+   std::stringstream stream;
+   stream << std::fixed << std::setprecision(2) << finalSize;
+   return stream.str() + unit;
 }
 
 // Draws a tree map visualization for the given element recursively
@@ -28,7 +38,7 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> be
    std::array<float, 2> drawBegin = {toPad(begin.first), toPad(begin.second)};
    std::array<float, 2> drawEnd = {toPad(end.first), toPad(end.second)};
    const std::uint64_t size = elem.GetSize();
-   const std::string label = elem.GetName() + " (" + std::to_string(size) + "B)";
+   const std::string label = elem.GetName() + " (" + GetDataStr(size) + ")";
 
    if (elem.GetNChildren() > 0) {
       auto windowBox =
