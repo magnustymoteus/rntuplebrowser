@@ -45,6 +45,7 @@ private:
    const std::map<std::string, RColor> &fColumnLegend;
    void
    DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> begin, std::pair<float, float> end, int depth) const;
+
    void DrawLegend() const;
 };
 

@@ -4,9 +4,9 @@
 #include <iomanip>
 
 #define TREEMAP_TEXTCOLOR RColor(255, 255, 255)
-constexpr float INDENTATION_OFFSET = 0.05f;
-constexpr float PAD_TEXT_OFFSET = 0.01f;
-constexpr float TEXT_SIZE_FACTOR = 0.02f;
+constexpr float INDENTATION_OFFSET = 0.0125f;
+constexpr float PAD_TEXT_OFFSET = 0.005f;
+constexpr float TEXT_SIZE_FACTOR = 0.01f;
 
 inline void AddStyledText(RCanvas *canvas, RPadPos pos, const std::string &content, RAttrText::EAlign align)
 {
@@ -30,12 +30,13 @@ void RTreeMap::DrawLegend() const
 {
    uint8_t i = 0;
    for (const auto &entry : fColumnLegend) {
-      const auto &posY = 0.75f - i * 0.05f;
-      auto box = fCanvas->Add<RBox>(RPadPos(0.75f, posY), RPadPos(0.75f + 0.05f, posY - 0.05F));
+      const auto &offset = 0.9f, factor = 0.05f;
+      const auto &posY = offset - i * factor;
+      auto box = fCanvas->Add<RBox>(RPadPos(offset, posY), RPadPos(offset + factor, posY - factor));
       box->fill.color = entry.second;
       box->fill.style = RAttrFill::kSolid;
 
-      auto text = fCanvas->Add<RText>(RPadPos(0.75f + 0.05f, posY - 0.025f), entry.first);
+      auto text = fCanvas->Add<RText>(RPadPos(offset + factor, posY - 0.025f), entry.first);
       text->text.align = RAttrText::kLeftCenter;
       text->text.size = TEXT_SIZE_FACTOR;
 
@@ -55,7 +56,7 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> be
       begin.second += INDENTATION_OFFSET;
    }
 
-   auto toPad = [](float u) { return 0.25f + u * 0.5f; };
+   auto toPad = [](float u) { return 0.125f + u * 0.75f; };
    std::array<float, 2> drawBegin = {toPad(begin.first), toPad(begin.second)};
    std::array<float, 2> drawEnd = {toPad(end.first), toPad(end.second)};
    const std::uint64_t size = elem.GetSize();
@@ -67,8 +68,8 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> be
       windowBox->fill.style = RAttrFill::kSolid;
       windowBox->border.color = RColor::kWhite;
 
-      AddStyledText(fCanvas.get(), RPadPos(drawBegin[0] + PAD_TEXT_OFFSET, drawEnd[1] + INDENTATION_OFFSET * 0.25f),
-                    label, RAttrText::kLeftCenter);
+      AddStyledText(fCanvas.get(), RPadPos(drawBegin[0] + PAD_TEXT_OFFSET, drawEnd[1] + PAD_TEXT_OFFSET), label,
+                    RAttrText::kLeftCenter);
    } else {
       auto box = fCanvas->Add<RBox>(RPadPos(drawBegin[0], drawBegin[1]), RPadPos(drawEnd[0], drawEnd[1]));
       box->fill.color = elem.GetColor();
