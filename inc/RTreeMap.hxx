@@ -4,8 +4,7 @@
 #include <ROOT/RDrawable.hxx>
 #include <ROOT/RCanvas.hxx>
 #include <ROOT/RNTuple.hxx>
-#include <ROOT/RNTupleInspector.hxx>
-#include <functional>
+#include <ROOT/RPad.hxx>
 
 using namespace ROOT::Experimental;
 
@@ -31,9 +30,13 @@ private:
 
 class RTreeMap : public RDrawable {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvasArg, const std::vector<RTreeMappable> &nodes,
+   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
             const std::map<std::string, RColor> &columnLegend)
-      : RDrawable("treemap"), fCanvas(canvasArg), fNodes(nodes), fColumnLegend(columnLegend)
+      : RDrawable("treemap"),
+        fNodes(nodes),
+        fColumnLegend(columnLegend),
+        fBoxPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1))),
+        fTextPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1)))
    {
       DrawTreeMap(fNodes[0], {0, 0}, {1, 1}, 0);
       DrawLegend();
@@ -41,11 +44,10 @@ public:
 
 private:
    std::vector<RTreeMappable> fNodes;
-   std::shared_ptr<RCanvas> fCanvas;
+   std::shared_ptr<RPad> fBoxPad;
+   std::shared_ptr<RPad> fTextPad;
    const std::map<std::string, RColor> &fColumnLegend;
-   void
-   DrawTreeMap(const RTreeMappable &elem, std::pair<float, float> begin, std::pair<float, float> end, int depth) const;
-
+   void DrawTreeMap(const RTreeMappable &elem, std::array<float, 2> begin, std::array<float, 2> end, int depth) const;
    void DrawLegend() const;
 };
 
