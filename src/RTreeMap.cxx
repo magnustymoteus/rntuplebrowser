@@ -13,6 +13,7 @@ static RColor kTreemapTextColor = RColor(255, 255, 255);
 constexpr float kIndentationOffset = 0.015f;
 constexpr float kPadTextOffset = 0.005f;
 constexpr float kTextSizeFactor = 0.01f;
+const static std::vector<std::string> kUnits{"B", "KB", "MB", "GB", "TB", "PB", "EB"};
 
 static uint64_t ComputeFnv(uint64_t a)
 {
@@ -30,13 +31,12 @@ static uint64_t ComputeFnv(uint64_t a)
 
 static std::string GetDataStr(const uint64_t &bytes)
 {
-   const std::vector<std::string> units{"B", "KB", "MB", "GB", "TB", "PB", "EB"};
    const uint64_t order = std::log10(bytes) / 3.0f;
-   const std::string unit = units[order];
+   const std::string unit = kUnits[order];
    const float finalSize = static_cast<float>(bytes) / std::pow(1000, order);
    std::stringstream stream;
-   stream << std::fixed << std::setprecision(2) << finalSize;
-   return stream.str() + unit;
+   stream << std::fixed << std::setprecision(2) << finalSize << unit;
+   return stream.str();
 }
 
 void RTreeMap::DrawLegend(const std::set<uint8_t> &legend) const
