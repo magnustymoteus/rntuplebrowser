@@ -30,8 +30,7 @@ RTreeMappable RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumn
 {
    uint64_t hash = ComputeFnv(static_cast<uint64_t>(colInsp.GetType()));
    const auto color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
-   std::string str = "";
-   return RTreeMappable(str, colInsp.GetCompressedSize(), color, childrenIdx, 0);
+   return RTreeMappable("", colInsp.GetCompressedSize(), color, childrenIdx, 0);
 }
 
 std::vector<RTreeMappable> RNTupleBrowser::CreateTreeMap(std::set<uint8_t> &legend) const
