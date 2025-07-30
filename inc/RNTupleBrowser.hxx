@@ -13,10 +13,10 @@ using namespace ROOT::Experimental;
 
 class RNTupleBrowser {
 private:
-   std::shared_ptr<RCanvas> fCanvas;
+   std::shared_ptr<RCanvas> fCanvas = RCanvas::Create("RNTupleBrowser");
    std::unique_ptr<RNTupleInspector> fInspector;
-   ROOT::DescriptorId_t fRootId;
-   size_t fRootSize;
+   ROOT::DescriptorId_t fRootId = fInspector->GetDescriptor().GetFieldZero().GetId();
+   size_t fRootSize = 0;
 
    std::vector<RTreeMappable> CreateTreeMap(std::set<uint8_t> &legend) const;
    RTreeMappable CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
@@ -26,10 +26,7 @@ private:
 
 public:
    RNTupleBrowser(const std::string_view tupleName, const std::string_view storage)
-      : fCanvas(RCanvas::Create("RNTupleBrowser")),
-        fInspector(RNTupleInspector::Create(tupleName, storage)),
-        fRootId(fInspector->GetDescriptor().GetFieldZero().GetId()),
-        fRootSize(0)
+      : fInspector(RNTupleInspector::Create(tupleName, storage))
    {
       for (const auto &childId : fInspector->GetDescriptor().GetFieldDescriptor(fRootId).GetLinkIds()) {
          fRootSize += fInspector->GetFieldTreeInspector(childId).GetCompressedSize();
