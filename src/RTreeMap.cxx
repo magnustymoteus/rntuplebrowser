@@ -5,11 +5,10 @@
 
 using namespace ROOT::Experimental;
 
-static RColor kTreemapTextColor = RColor(255, 255, 255);
-constexpr float kIndentationOffset = 0.015f;
-constexpr float kPadTextOffset = 0.005f;
-constexpr float kTextSizeFactor = 0.01f;
-const static std::vector<std::string> kUnits{"B", "KB", "MB", "GB", "TB", "PB", "EB"};
+static constexpr float kIndentationOffset = 0.015f;
+static constexpr float kPadTextOffset = 0.005f;
+static constexpr float kTextSizeFactor = 0.01f;
+static constexpr const char *kUnits[] = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
 
 static uint64_t ComputeFnv(const std::string &str)
 {
@@ -156,7 +155,7 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, RTreeMap::RVec2 begin, 
    float rectWidth = end.x - begin.x;
    float rectHeight = end.y - begin.y;
    text->text.size = std::min(std::min(rectWidth, rectHeight) * 0.1f, kTextSizeFactor);
-   text->text.color = kTreemapTextColor;
+   text->text.color = RColor::kWhite;
 
    if (!isLeaf) {
       float indent = kIndentationOffset;
