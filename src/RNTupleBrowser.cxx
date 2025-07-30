@@ -3,6 +3,7 @@
 #include <ROOT/RColumnElementBase.hxx>
 #include <iostream>
 #include <queue>
+#include <cassert>
 
 /* hash string into RGB color with FNV-1a: used for speed and diffusion*/
 static uint64_t ComputeFnv(const std::string &str)
@@ -31,9 +32,8 @@ RTreeMappable RNTupleBrowser::CreateRTreeMappable(const ROOT::RFieldDescriptor &
                                                   const std::uint64_t &childrenIdx,
                                                   const std::uint64_t &nChildren) const
 {
-   uint64_t size = (fRootFld.GetId() != fldDesc.GetId())
-                      ? fInspector->GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize()
-                      : fRootSize;
+   uint64_t size =
+      (fRootId != fldDesc.GetId()) ? fInspector->GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize() : fRootSize;
    const uint64_t &hash = ComputeFnv(fldDesc.GetTypeName());
    const auto color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
    return RTreeMappable(fldDesc.GetFieldName(), size, color, childrenIdx, nChildren);
@@ -53,7 +53,7 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::map<std::string, 
    const auto &descriptor = fInspector->GetDescriptor();
 
    std::queue<std::pair<uint64_t, bool>> queue; // (columnid/fieldid, isfield)
-   queue.push({fRootFld.GetId(), true});
+   queue.push({fRootId, true});
    while (!queue.empty()) {
       size_t levelSize = queue.size();
       size_t levelChildrenStart = nodes.size() + levelSize;
