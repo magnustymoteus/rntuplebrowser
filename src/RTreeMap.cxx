@@ -2,8 +2,6 @@
 #include <ROOT/RBox.hxx>
 #include <ROOT/RText.hxx>
 #include <iomanip>
-#include <ROOT/RColumnElementBase.hxx>
-
 struct RRect {
    RVec2 p1, p2;
    RRect(const RVec2 &p1, const RVec2 &p2) : p1(p1), p2(p2) {}
@@ -15,18 +13,18 @@ constexpr float kPadTextOffset = 0.005f;
 constexpr float kTextSizeFactor = 0.01f;
 const static std::vector<std::string> kUnits{"B", "KB", "MB", "GB", "TB", "PB", "EB"};
 
-static uint64_t ComputeFnv(uint64_t a)
+static uint64_t ComputeFnv(const std::string &str)
 {
-   const uint64_t FNV_offset = 14695981039346656037ULL;
-   const uint64_t FNV_prime = 1099511628211ULL;
-
-   uint64_t h = FNV_offset;
-   for (int i = 0; i < 8; ++i) {
-      uint8_t octet = static_cast<uint8_t>(a >> (i * 8));
-      h ^= octet;
-      h *= FNV_prime;
-   }
+   uint64_t h = 14695981039346656037ULL;
+   for (char c : str)
+      h = (h ^ static_cast<uint8_t>(c)) * 1099511628211ULL;
    return h;
+}
+
+static RColor ComputeColor(const std::string &str)
+{
+   uint64_t hash = ComputeFnv(str);
+   return RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
 }
 
 static std::string GetDataStr(const uint64_t &bytes)
@@ -39,20 +37,17 @@ static std::string GetDataStr(const uint64_t &bytes)
    return stream.str();
 }
 
-void RTreeMap::DrawLegend(const std::set<uint8_t> &legend) const
+void RTreeMap::DrawLegend(const std::set<std::string> &legend) const
 {
    uint8_t index = 0;
    for (const auto &entry : legend) {
       const auto offset = 0.9f, factor = 0.05f;
       const auto posY = offset - index * factor;
       auto box = fBoxPad->Add<RBox>(RPadPos(offset, posY), RPadPos(offset + factor, posY - factor));
-      const auto hash = ComputeFnv(entry);
-      box->fill.color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
+      box->fill.color = ComputeColor(entry);
       box->fill.style = RAttrFill::kSolid;
 
-      auto text =
-         fTextPad->Add<RText>(RPadPos(offset + factor, posY - 0.025f),
-                              ROOT::Internal::RColumnElementBase::GetColumnTypeName(ROOT::ENTupleColumnType(entry)));
+      auto text = fTextPad->Add<RText>(RPadPos(offset + factor, posY - 0.025f), entry);
       text->text.align = RAttrText::kLeftCenter;
       text->text.size = kTextSizeFactor;
 
@@ -146,7 +141,7 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, RVec2 begin, RVec2 end,
    RVec2 drawEnd = {toPad(end.x), toPad(end.y)};
    bool isLeaf = (element.GetNChildren() == 0);
 
-   RColor boxColor = isLeaf ? element.GetColor() : RColor(100, 100, 100);
+   RColor boxColor = isLeaf ? ComputeColor(element.GetType()) : RColor(100, 100, 100);
    auto box = fBoxPad->Add<RBox>(RPadPos(drawBegin.x, drawBegin.y), RPadPos(drawEnd.x, drawEnd.y));
    box->fill.color = boxColor;
    box->fill.style = RAttrFill::kSolid;

@@ -12,21 +12,21 @@ using namespace ROOT::Experimental;
 class RTreeMappable {
 public:
    const std::string &GetName() const { return fName; }
+   const std::string &GetType() const { return fType; }
+
    std::uint64_t GetSize() const { return fSize; }
    std::uint64_t GetNChildren() const { return fNChildren; }
    std::uint64_t GetChildrenIdx() const { return fChildrenIdx; }
-   RColor GetColor() const { return fColor; }
 
-   RTreeMappable(const std::string name, const std::uint64_t size, const RColor color, const std::uint64_t childrenIdx,
-                 const std::uint64_t nChildren)
-      : fName(name), fSize(size), fColor(color), fChildrenIdx(childrenIdx), fNChildren(nChildren)
+   RTreeMappable(const std::string name, const std::string type, const std::uint64_t size,
+                 const std::uint64_t childrenIdx, const std::uint64_t nChildren)
+      : fName(name), fType(type), fSize(size), fChildrenIdx(childrenIdx), fNChildren(nChildren)
    {
    }
 
 private:
    std::uint64_t fChildrenIdx, fNChildren, fSize;
-   std::string fName;
-   RColor fColor;
+   std::string fName, fType;
 };
 
 struct RVec2 {
@@ -36,7 +36,8 @@ struct RVec2 {
 
 class RTreeMap : public RDrawable {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes, const std::set<uint8_t> &legend)
+   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
+            const std::set<std::string> &legend)
       : RDrawable("treemap"),
         fNodes(nodes),
         fBoxPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1))),
@@ -51,7 +52,7 @@ private:
    std::shared_ptr<RPad> fBoxPad;
    std::shared_ptr<RPad> fTextPad;
    void DrawTreeMap(const RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
-   void DrawLegend(const std::set<uint8_t> &legend) const;
+   void DrawLegend(const std::set<std::string> &legend) const;
 };
 
 #endif

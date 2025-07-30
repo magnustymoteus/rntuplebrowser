@@ -18,7 +18,7 @@ private:
    ROOT::DescriptorId_t fRootId = fInspector->GetDescriptor().GetFieldZero().GetId();
    size_t fRootSize = 0;
 
-   std::vector<RTreeMappable> CreateTreeMap(std::set<uint8_t> &legend) const;
+   std::vector<RTreeMappable> CreateTreeMap(std::set<std::string> &legend) const;
    RTreeMappable CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
                                     const std::uint64_t &nChildren) const;
    RTreeMappable
