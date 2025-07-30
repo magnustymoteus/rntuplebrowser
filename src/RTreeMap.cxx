@@ -2,6 +2,7 @@
 #include <ROOT/RBox.hxx>
 #include <ROOT/RText.hxx>
 #include <iomanip>
+#include <ROOT/RColumnElementBase.hxx>
 
 struct RRect {
    RVec2 p1, p2;
@@ -12,6 +13,20 @@ struct RRect {
 constexpr float INDENTATION_OFFSET = 0.015f;
 constexpr float PAD_TEXT_OFFSET = 0.005f;
 constexpr float TEXT_SIZE_FACTOR = 0.01f;
+
+static uint64_t ComputeFnv(const uint64_t &a)
+{
+   const uint64_t FNV_offset = 14695981039346656037ULL;
+   const uint64_t FNV_prime = 1099511628211ULL;
+
+   uint64_t h = FNV_offset;
+   for (int i = 0; i < 8; ++i) {
+      uint8_t octet = static_cast<uint8_t>(a >> (i * 8));
+      h ^= octet;
+      h *= FNV_prime;
+   }
+   return h;
+}
 
 static std::string GetDataStr(const uint64_t &bytes)
 {
@@ -24,17 +39,20 @@ static std::string GetDataStr(const uint64_t &bytes)
    return stream.str() + unit;
 }
 
-void RTreeMap::DrawLegend() const
+void RTreeMap::DrawLegend(const std::set<uint8_t> &legend) const
 {
    uint8_t index = 0;
-   for (const auto &entry : fColumnLegend) {
+   for (const auto &entry : legend) {
       const auto offset = 0.9f, factor = 0.05f;
       const auto posY = offset - index * factor;
       auto box = fBoxPad->Add<RBox>(RPadPos(offset, posY), RPadPos(offset + factor, posY - factor));
-      box->fill.color = entry.second;
+      const auto &hash = ComputeFnv(entry);
+      box->fill.color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
       box->fill.style = RAttrFill::kSolid;
 
-      auto text = fTextPad->Add<RText>(RPadPos(offset + factor, posY - 0.025f), entry.first);
+      auto text =
+         fTextPad->Add<RText>(RPadPos(offset + factor, posY - 0.025f),
+                              ROOT::Internal::RColumnElementBase::GetColumnTypeName(ROOT::ENTupleColumnType(entry)));
       text->text.align = RAttrText::kLeftCenter;
       text->text.size = TEXT_SIZE_FACTOR;
 

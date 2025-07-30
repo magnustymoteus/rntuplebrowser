@@ -5,6 +5,7 @@
 #include <ROOT/RCanvas.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RPad.hxx>
+#include <set>
 
 using namespace ROOT::Experimental;
 
@@ -35,25 +36,22 @@ struct RVec2 {
 
 class RTreeMap : public RDrawable {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
-            const std::map<std::string, RColor> &columnLegend)
+   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes, const std::set<uint8_t> &legend)
       : RDrawable("treemap"),
         fNodes(nodes),
-        fColumnLegend(columnLegend),
         fBoxPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1))),
         fTextPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1)))
    {
       DrawTreeMap(fNodes[0], RVec2(0, 0), RVec2(1, 1), 0);
-      DrawLegend();
+      DrawLegend(legend);
    }
 
 private:
    std::vector<RTreeMappable> fNodes;
    std::shared_ptr<RPad> fBoxPad;
    std::shared_ptr<RPad> fTextPad;
-   const std::map<std::string, RColor> &fColumnLegend;
    void DrawTreeMap(const RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
-   void DrawLegend() const;
+   void DrawLegend(const std::set<uint8_t> &legend) const;
 };
 
 #endif

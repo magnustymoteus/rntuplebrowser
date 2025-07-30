@@ -1,18 +1,8 @@
 #include <RNTupleBrowser.hxx>
 #include <ROOT/RCanvas.hxx>
-#include <ROOT/RColumnElementBase.hxx>
 #include <iostream>
 #include <queue>
 #include <cassert>
-
-/* hash string into RGB color with FNV-1a: used for speed and diffusion*/
-static uint64_t ComputeFnv(const std::string &str)
-{
-   uint64_t h = 14695981039346656037ULL;
-   for (char c : str)
-      h = (h ^ static_cast<uint8_t>(c)) * 1099511628211ULL;
-   return h;
-}
 
 static uint64_t ComputeFnv(const uint64_t &a)
 {
@@ -34,9 +24,7 @@ RTreeMappable RNTupleBrowser::CreateRTreeMappable(const ROOT::RFieldDescriptor &
 {
    uint64_t size =
       (fRootId != fldDesc.GetId()) ? fInspector->GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize() : fRootSize;
-   const uint64_t &hash = ComputeFnv(fldDesc.GetTypeName());
-   const auto color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
-   return RTreeMappable(fldDesc.GetFieldName(), size, color, childrenIdx, nChildren);
+   return RTreeMappable(fldDesc.GetFieldName(), size, RColor(100, 100, 100), childrenIdx, nChildren);
 }
 RTreeMappable RNTupleBrowser::CreateRTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
                                                   const std::uint64_t &childrenIdx) const
@@ -47,7 +35,7 @@ RTreeMappable RNTupleBrowser::CreateRTreeMappable(const RNTupleInspector::RColum
    return RTreeMappable(str, colInsp.GetCompressedSize(), color, childrenIdx, 0);
 }
 
-std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::map<std::string, RColor> &columnLegend) const
+std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::set<uint8_t> &legend) const
 {
    std::vector<RTreeMappable> nodes;
    const auto &descriptor = fInspector->GetDescriptor();
@@ -80,9 +68,8 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::map<std::string, 
          } else {
             const auto &colInsp = fInspector->GetColumnInspector(current.first);
             const auto &node = CreateRTreeMappable(colInsp, levelChildrenStart);
-            columnLegend.insert(
-               {ROOT::Internal::RColumnElementBase::GetColumnTypeName(colInsp.GetType()), node.GetColor()});
             nodes.push_back(node);
+            legend.insert(static_cast<uint8_t>(colInsp.GetType()));
          }
 
          levelChildrenStart += nChildren;
@@ -93,8 +80,8 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::map<std::string, 
 
 void RNTupleBrowser::Browse() const
 {
-   std::map<std::string, RColor> columnLegend;
-   const auto &treeMap = CreateRTreeMap(columnLegend);
-   fCanvas->Draw<RTreeMap>(fCanvas, treeMap, columnLegend);
+   std::set<uint8_t> legend;
+   const auto &treeMap = CreateRTreeMap(legend);
+   fCanvas->Draw<RTreeMap>(fCanvas, treeMap, legend);
    fCanvas->Show();
 }

@@ -7,6 +7,7 @@
 #include <ROOT/RCanvas.hxx>
 #include <ROOT/RNTupleInspector.hxx>
 #include "RTreeMap.hxx"
+#include <set>
 
 using namespace ROOT::Experimental;
 
@@ -17,7 +18,7 @@ private:
    ROOT::DescriptorId_t fRootId;
    size_t fRootSize;
 
-   std::vector<RTreeMappable> CreateRTreeMap(std::map<std::string, RColor> &columnLegend) const;
+   std::vector<RTreeMappable> CreateRTreeMap(std::set<uint8_t> &legend) const;
    RTreeMappable CreateRTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
                                      const std::uint64_t &nChildren) const;
    RTreeMappable
