@@ -4,7 +4,7 @@
 #include <queue>
 #include <cassert>
 
-static uint64_t ComputeFnv(const uint64_t &a)
+static uint64_t ComputeFnv(uint64_t a)
 {
    const uint64_t FNV_offset = 14695981039346656037ULL;
    const uint64_t FNV_prime = 1099511628211ULL;
@@ -28,7 +28,7 @@ RTreeMappable RNTupleBrowser::CreateTreeMappable(const ROOT::RFieldDescriptor &f
 RTreeMappable RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
                                                  const std::uint64_t &childrenIdx) const
 {
-   const uint64_t &hash = ComputeFnv(static_cast<uint64_t>(colInsp.GetType()));
+   uint64_t hash = ComputeFnv(static_cast<uint64_t>(colInsp.GetType()));
    const auto color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
    std::string str = "";
    return RTreeMappable(str, colInsp.GetCompressedSize(), color, childrenIdx, 0);

@@ -14,7 +14,7 @@ constexpr float INDENTATION_OFFSET = 0.015f;
 constexpr float PAD_TEXT_OFFSET = 0.005f;
 constexpr float TEXT_SIZE_FACTOR = 0.01f;
 
-static uint64_t ComputeFnv(const uint64_t &a)
+static uint64_t ComputeFnv(uint64_t a)
 {
    const uint64_t FNV_offset = 14695981039346656037ULL;
    const uint64_t FNV_prime = 1099511628211ULL;
@@ -46,7 +46,7 @@ void RTreeMap::DrawLegend(const std::set<uint8_t> &legend) const
       const auto offset = 0.9f, factor = 0.05f;
       const auto posY = offset - index * factor;
       auto box = fBoxPad->Add<RBox>(RPadPos(offset, posY), RPadPos(offset + factor, posY - factor));
-      const auto &hash = ComputeFnv(entry);
+      auto hash = ComputeFnv(entry);
       box->fill.color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
       box->fill.style = RAttrFill::kSolid;
 
