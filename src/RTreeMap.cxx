@@ -9,10 +9,10 @@ struct RRect {
    RRect(const RVec2 &p1, const RVec2 &p2) : p1(p1), p2(p2) {}
 };
 
-#define TREEMAP_TEXTCOLOR RColor(255, 255, 255)
-constexpr float INDENTATION_OFFSET = 0.015f;
-constexpr float PAD_TEXT_OFFSET = 0.005f;
-constexpr float TEXT_SIZE_FACTOR = 0.01f;
+static RColor kTreemapTextColor = RColor(255, 255, 255);
+constexpr float kIndentationOffset = 0.015f;
+constexpr float kPadTextOffset = 0.005f;
+constexpr float kTextSizeFactor = 0.01f;
 
 static uint64_t ComputeFnv(uint64_t a)
 {
@@ -46,7 +46,7 @@ void RTreeMap::DrawLegend(const std::set<uint8_t> &legend) const
       const auto offset = 0.9f, factor = 0.05f;
       const auto posY = offset - index * factor;
       auto box = fBoxPad->Add<RBox>(RPadPos(offset, posY), RPadPos(offset + factor, posY - factor));
-      auto hash = ComputeFnv(entry);
+      const auto hash = ComputeFnv(entry);
       box->fill.color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
       box->fill.style = RAttrFill::kSolid;
 
@@ -54,7 +54,7 @@ void RTreeMap::DrawLegend(const std::set<uint8_t> &legend) const
          fTextPad->Add<RText>(RPadPos(offset + factor, posY - 0.025f),
                               ROOT::Internal::RColumnElementBase::GetColumnTypeName(ROOT::ENTupleColumnType(entry)));
       text->text.align = RAttrText::kLeftCenter;
-      text->text.size = TEXT_SIZE_FACTOR;
+      text->text.size = kTextSizeFactor;
 
       index++;
    }
@@ -154,18 +154,18 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, RVec2 begin, RVec2 end,
 
    const std::string label = element.GetName() + " (" + GetDataStr(element.GetSize()) + ")";
    RPadPos labelPos = isLeaf ? RPadPos((drawBegin.x + drawEnd.x) / 2.0f, (drawBegin.y + drawEnd.y) / 2.0f)
-                             : RPadPos(drawBegin.x + PAD_TEXT_OFFSET, drawEnd.y + PAD_TEXT_OFFSET);
+                             : RPadPos(drawBegin.x + kPadTextOffset, drawEnd.y + kPadTextOffset);
    RAttrText::EAlign align = isLeaf ? RAttrText::kCenter : RAttrText::kLeftCenter;
 
    auto text = fTextPad->Add<RText>(labelPos, label);
    text->text.align = align;
    float rectWidth = end.x - begin.x;
    float rectHeight = end.y - begin.y;
-   text->text.size = std::min(std::min(rectWidth, rectHeight) * 0.1f, TEXT_SIZE_FACTOR);
-   text->text.color = TREEMAP_TEXTCOLOR;
+   text->text.size = std::min(std::min(rectWidth, rectHeight) * 0.1f, kTextSizeFactor);
+   text->text.color = kTreemapTextColor;
 
    if (!isLeaf) {
-      float indent = INDENTATION_OFFSET;
+      float indent = kIndentationOffset;
       RVec2 innerBegin = {begin.x + indent, begin.y + indent};
       RVec2 innerEnd = {end.x - indent, end.y - indent};
       std::vector<RTreeMappable> children;
