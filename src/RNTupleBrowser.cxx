@@ -18,16 +18,15 @@ static uint64_t ComputeFnv(const uint64_t &a)
    return h;
 }
 
-RTreeMappable RNTupleBrowser::CreateRTreeMappable(const ROOT::RFieldDescriptor &fldDesc,
-                                                  const std::uint64_t &childrenIdx,
-                                                  const std::uint64_t &nChildren) const
+RTreeMappable RNTupleBrowser::CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc,
+                                                 const std::uint64_t &childrenIdx, const std::uint64_t &nChildren) const
 {
    uint64_t size =
       (fRootId != fldDesc.GetId()) ? fInspector->GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize() : fRootSize;
    return RTreeMappable(fldDesc.GetFieldName(), size, RColor(100, 100, 100), childrenIdx, nChildren);
 }
-RTreeMappable RNTupleBrowser::CreateRTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
-                                                  const std::uint64_t &childrenIdx) const
+RTreeMappable RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
+                                                 const std::uint64_t &childrenIdx) const
 {
    const uint64_t &hash = ComputeFnv(static_cast<uint64_t>(colInsp.GetType()));
    const auto color = RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
@@ -35,7 +34,7 @@ RTreeMappable RNTupleBrowser::CreateRTreeMappable(const RNTupleInspector::RColum
    return RTreeMappable(str, colInsp.GetCompressedSize(), color, childrenIdx, 0);
 }
 
-std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::set<uint8_t> &legend) const
+std::vector<RTreeMappable> RNTupleBrowser::CreateTreeMap(std::set<uint8_t> &legend) const
 {
    std::vector<RTreeMappable> nodes;
    const auto &descriptor = fInspector->GetDescriptor();
@@ -63,11 +62,11 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::set<uint8_t> &leg
                queue.push({columnId, 0});
             }
             nChildren = children.size();
-            const auto &node = CreateRTreeMappable(fldDesc, levelChildrenStart, nChildren);
+            const auto &node = CreateTreeMappable(fldDesc, levelChildrenStart, nChildren);
             nodes.push_back(node);
          } else {
             const auto &colInsp = fInspector->GetColumnInspector(current.first);
-            const auto &node = CreateRTreeMappable(colInsp, levelChildrenStart);
+            const auto &node = CreateTreeMappable(colInsp, levelChildrenStart);
             nodes.push_back(node);
             legend.insert(static_cast<uint8_t>(colInsp.GetType()));
          }
@@ -81,7 +80,7 @@ std::vector<RTreeMappable> RNTupleBrowser::CreateRTreeMap(std::set<uint8_t> &leg
 void RNTupleBrowser::Browse() const
 {
    std::set<uint8_t> legend;
-   const auto &treeMap = CreateRTreeMap(legend);
+   const auto &treeMap = CreateTreeMap(legend);
    fCanvas->Draw<RTreeMap>(fCanvas, treeMap, legend);
    fCanvas->Show();
 }

@@ -18,11 +18,11 @@ private:
    ROOT::DescriptorId_t fRootId;
    size_t fRootSize;
 
-   std::vector<RTreeMappable> CreateRTreeMap(std::set<uint8_t> &legend) const;
-   RTreeMappable CreateRTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
-                                     const std::uint64_t &nChildren) const;
+   std::vector<RTreeMappable> CreateTreeMap(std::set<uint8_t> &legend) const;
+   RTreeMappable CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
+                                    const std::uint64_t &nChildren) const;
    RTreeMappable
-   CreateRTreeMappable(const RNTupleInspector::RColumnInspector &colInsp, const std::uint64_t &childrenIdx) const;
+   CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp, const std::uint64_t &childrenIdx) const;
 
 public:
    RNTupleBrowser(const std::string_view tupleName, const std::string_view storage)
