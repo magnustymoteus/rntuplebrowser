@@ -34,7 +34,7 @@ class RTreeMap : public RDrawable {
 public:
    struct RVec2 {
       float x, y;
-      RVec2(const float &x, const float &y) : x(x), y(y) {}
+      RVec2(float x, float y) : x(x), y(y) {}
    };
    struct RRect {
       RVec2 p1, p2;
