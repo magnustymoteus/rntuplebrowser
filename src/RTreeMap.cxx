@@ -5,9 +5,9 @@
 
 using namespace ROOT::Experimental;
 
-static constexpr float kIndentationOffset = 0.015f;
-static constexpr float kPadTextOffset = 0.005f;
-static constexpr float kTextSizeFactor = 0.01f;
+static constexpr float kIndentationOffset = 0.02f;
+static constexpr float kPadTextOffset = 0.004f;
+static constexpr float kTextSizeFactor = 0.009f;
 static constexpr const char *kUnits[] = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
 
 static uint64_t ComputeFnv(const std::string &str)
@@ -143,12 +143,13 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, RTreeMap::RVec2 begin, 
    auto box = fBoxPad->Add<RBox>(RPadPos(drawBegin.x, drawBegin.y), RPadPos(drawEnd.x, drawEnd.y));
    box->fill.color = boxColor;
    box->fill.style = RAttrFill::kSolid;
-   box->border.color = RColor::kWhite;
+   box->border.color = RColor(0, 0, 0);
+   box->border.width = 0.15f;
 
    const std::string label = element.GetName() + " (" + GetDataStr(element.GetSize()) + ")";
    RPadPos labelPos = isLeaf ? RPadPos((drawBegin.x + drawEnd.x) / 2.0f, (drawBegin.y + drawEnd.y) / 2.0f)
-                             : RPadPos(drawBegin.x + kPadTextOffset, drawEnd.y + kPadTextOffset);
-   RAttrText::EAlign align = isLeaf ? RAttrText::kCenter : RAttrText::kLeftCenter;
+                             : RPadPos(drawBegin.x + kPadTextOffset, drawEnd.y - kPadTextOffset);
+   RAttrText::EAlign align = isLeaf ? RAttrText::kCenter : RAttrText::kLeftTop;
 
    auto text = fTextPad->Add<RText>(labelPos, label);
    text->text.align = align;
