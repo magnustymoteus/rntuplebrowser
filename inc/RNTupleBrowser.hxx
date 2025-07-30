@@ -9,7 +9,7 @@
 #include "RTreeMap.hxx"
 #include <set>
 
-using namespace ROOT::Experimental;
+namespace ROOT::Experimental {
 
 class RNTupleBrowser {
 private:
@@ -18,10 +18,11 @@ private:
    ROOT::DescriptorId_t fRootId = fInspector->GetDescriptor().GetFieldZero().GetId();
    size_t fRootSize = 0;
 
-   std::vector<RTreeMappable> CreateTreeMap(std::set<std::string> &legend) const;
-   RTreeMappable CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc, const std::uint64_t &childrenIdx,
-                                    const std::uint64_t &nChildren) const;
-   RTreeMappable
+   std::vector<ROOT::Experimental::RTreeMappable> CreateTreeMap(std::set<std::string> &legend) const;
+   ROOT::Experimental::RTreeMappable CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc,
+                                                        const std::uint64_t &childrenIdx,
+                                                        const std::uint64_t &nChildren) const;
+   ROOT::Experimental::RTreeMappable
    CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp, const std::uint64_t &childrenIdx) const;
 
 public:
@@ -34,5 +35,7 @@ public:
    }
    void Browse() const;
 };
+
+} // namespace ROOT::Experimental
 
 #endif // RNTUPLEBROWSERfHXX

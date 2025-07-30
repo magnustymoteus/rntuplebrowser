@@ -7,7 +7,7 @@
 #include <ROOT/RPad.hxx>
 #include <set>
 
-using namespace ROOT::Experimental;
+namespace ROOT::Experimental {
 
 class RTreeMappable {
 public:
@@ -36,7 +36,7 @@ struct RVec2 {
 
 class RTreeMap : public RDrawable {
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
+   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<ROOT::Experimental::RTreeMappable> &nodes,
             const std::set<std::string> &legend)
       : RDrawable("treemap"),
         fNodes(nodes),
@@ -48,11 +48,12 @@ public:
    }
 
 private:
-   std::vector<RTreeMappable> fNodes;
+   std::vector<ROOT::Experimental::RTreeMappable> fNodes;
    std::shared_ptr<RPad> fBoxPad;
    std::shared_ptr<RPad> fTextPad;
-   void DrawTreeMap(const RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
+   void DrawTreeMap(const ROOT::Experimental::RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
    void DrawLegend(const std::set<std::string> &legend) const;
 };
+} // namespace ROOT::Experimental
 
 #endif

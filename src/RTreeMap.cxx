@@ -3,11 +3,11 @@
 #include <ROOT/RText.hxx>
 #include <iomanip>
 struct RRect {
-   RVec2 p1, p2;
-   RRect(const RVec2 &p1, const RVec2 &p2) : p1(p1), p2(p2) {}
+   ROOT::Experimental::RVec2 p1, p2;
+   RRect(const ROOT::Experimental::RVec2 &p1, const ROOT::Experimental::RVec2 &p2) : p1(p1), p2(p2) {}
 };
 
-static RColor kTreemapTextColor = RColor(255, 255, 255);
+static ROOT::Experimental::RColor kTreemapTextColor = ROOT::Experimental::RColor(255, 255, 255);
 constexpr float kIndentationOffset = 0.015f;
 constexpr float kPadTextOffset = 0.005f;
 constexpr float kTextSizeFactor = 0.01f;
@@ -21,10 +21,10 @@ static uint64_t ComputeFnv(const std::string &str)
    return h;
 }
 
-static RColor ComputeColor(const std::string &str)
+static ROOT::Experimental::RColor ComputeColor(const std::string &str)
 {
    const uint64_t hash = ComputeFnv(str);
-   return RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
+   return ROOT::Experimental::RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
 }
 
 static std::string GetDataStr(const uint64_t &bytes)
@@ -37,7 +37,7 @@ static std::string GetDataStr(const uint64_t &bytes)
    return stream.str();
 }
 
-void RTreeMap::DrawLegend(const std::set<std::string> &legend) const
+void ROOT::Experimental::RTreeMap::DrawLegend(const std::set<std::string> &legend) const
 {
    uint8_t index = 0;
    for (const auto &entry : legend) {
@@ -56,8 +56,8 @@ void RTreeMap::DrawLegend(const std::set<std::string> &legend) const
 }
 
 /* algorithm: https://vanwijk.win.tue.nl/stm.pdf */
-static float ComputeWorstRatio(const std::vector<RTreeMappable> &row, float width, float height, uint64_t totalSize,
-                               bool horizontalRows)
+static float ComputeWorstRatio(const std::vector<ROOT::Experimental::RTreeMappable> &row, float width, float height,
+                               uint64_t totalSize, bool horizontalRows)
 {
    if (row.empty())
       return 0.0f;
@@ -78,19 +78,21 @@ static float ComputeWorstRatio(const std::vector<RTreeMappable> &row, float widt
    return worstRatio;
 }
 
-static std::vector<std::pair<RTreeMappable, RRect>> SquarifyChildren(const std::vector<RTreeMappable> &children,
-                                                                     RVec2 begin, RVec2 end, bool horizontalRows,
-                                                                     uint64_t totalSize)
+static std::vector<std::pair<ROOT::Experimental::RTreeMappable, RRect>>
+SquarifyChildren(const std::vector<ROOT::Experimental::RTreeMappable> &children, ROOT::Experimental::RVec2 begin,
+                 ROOT::Experimental::RVec2 end, bool horizontalRows, uint64_t totalSize)
 {
    float width = end.x - begin.x;
    float height = end.y - begin.y;
-   std::vector<RTreeMappable> remainingChildren = children;
+   std::vector<ROOT::Experimental::RTreeMappable> remainingChildren = children;
    std::sort(remainingChildren.begin(), remainingChildren.end(),
-             [](const RTreeMappable &a, const RTreeMappable &b) { return a.GetSize() > b.GetSize(); });
-   std::vector<std::pair<RTreeMappable, RRect>> result;
-   RVec2 remainingBegin = begin;
+             [](const ROOT::Experimental::RTreeMappable &a, const ROOT::Experimental::RTreeMappable &b) {
+                return a.GetSize() > b.GetSize();
+             });
+   std::vector<std::pair<ROOT::Experimental::RTreeMappable, RRect>> result;
+   ROOT::Experimental::RVec2 remainingBegin = begin;
    while (!remainingChildren.empty()) {
-      std::vector<RTreeMappable> row;
+      std::vector<ROOT::Experimental::RTreeMappable> row;
       float currentWorstRatio = std::numeric_limits<float>::max();
       float remainingWidth = end.x - remainingBegin.x;
       float remainingHeight = end.y - remainingBegin.y;
@@ -117,11 +119,13 @@ static std::vector<std::pair<RTreeMappable, RRect>> SquarifyChildren(const std::
       float position = 0.0f;
       for (const auto &child : row) {
          float childDimension = static_cast<float>(child.GetSize()) / sumRow * (horizontalRows ? width : height);
-         RVec2 childBegin = horizontalRows ? RVec2{remainingBegin.x + position, remainingBegin.y}
-                                           : RVec2{remainingBegin.x, remainingBegin.y + position};
-         RVec2 childEnd = horizontalRows
-                             ? RVec2{remainingBegin.x + position + childDimension, remainingBegin.y + dimension}
-                             : RVec2{remainingBegin.x + dimension, remainingBegin.y + position + childDimension};
+         ROOT::Experimental::RVec2 childBegin =
+            horizontalRows ? ROOT::Experimental::RVec2{remainingBegin.x + position, remainingBegin.y}
+                           : ROOT::Experimental::RVec2{remainingBegin.x, remainingBegin.y + position};
+         ROOT::Experimental::RVec2 childEnd =
+            horizontalRows
+               ? ROOT::Experimental::RVec2{remainingBegin.x + position + childDimension, remainingBegin.y + dimension}
+               : ROOT::Experimental::RVec2{remainingBegin.x + dimension, remainingBegin.y + position + childDimension};
          result.push_back({child, {childBegin, childEnd}});
          position += childDimension;
       }
@@ -134,18 +138,21 @@ static std::vector<std::pair<RTreeMappable, RRect>> SquarifyChildren(const std::
 }
 /* */
 
-void RTreeMap::DrawTreeMap(const RTreeMappable &element, RVec2 begin, RVec2 end, int depth) const
+void ROOT::Experimental::RTreeMap::DrawTreeMap(const ROOT::Experimental::RTreeMappable &element,
+                                               ROOT::Experimental::RVec2 begin, ROOT::Experimental::RVec2 end,
+                                               int depth) const
 {
    auto toPad = [](float u) { return 0.125f + u * 0.75f; };
-   RVec2 drawBegin = {toPad(begin.x), toPad(begin.y)};
-   RVec2 drawEnd = {toPad(end.x), toPad(end.y)};
+   ROOT::Experimental::RVec2 drawBegin = {toPad(begin.x), toPad(begin.y)};
+   ROOT::Experimental::RVec2 drawEnd = {toPad(end.x), toPad(end.y)};
    bool isLeaf = (element.GetNChildren() == 0);
 
-   RColor boxColor = isLeaf ? ComputeColor(element.GetType()) : RColor(100, 100, 100);
+   ROOT::Experimental::RColor boxColor =
+      isLeaf ? ComputeColor(element.GetType()) : ROOT::Experimental::RColor(100, 100, 100);
    auto box = fBoxPad->Add<RBox>(RPadPos(drawBegin.x, drawBegin.y), RPadPos(drawEnd.x, drawEnd.y));
    box->fill.color = boxColor;
    box->fill.style = RAttrFill::kSolid;
-   box->border.color = RColor::kWhite;
+   box->border.color = ROOT::Experimental::RColor::kWhite;
 
    const std::string label = element.GetName() + " (" + GetDataStr(element.GetSize()) + ")";
    RPadPos labelPos = isLeaf ? RPadPos((drawBegin.x + drawEnd.x) / 2.0f, (drawBegin.y + drawEnd.y) / 2.0f)
@@ -161,9 +168,9 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, RVec2 begin, RVec2 end,
 
    if (!isLeaf) {
       float indent = kIndentationOffset;
-      RVec2 innerBegin = {begin.x + indent, begin.y + indent};
-      RVec2 innerEnd = {end.x - indent, end.y - indent};
-      std::vector<RTreeMappable> children;
+      ROOT::Experimental::RVec2 innerBegin = {begin.x + indent, begin.y + indent};
+      ROOT::Experimental::RVec2 innerEnd = {end.x - indent, end.y - indent};
+      std::vector<ROOT::Experimental::RTreeMappable> children;
       for (std::uint64_t i = 0; i < element.GetNChildren(); ++i)
          children.push_back(fNodes[element.GetChildrenIdx() + i]);
       uint64_t totalSize = 0;

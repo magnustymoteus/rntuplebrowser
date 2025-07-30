@@ -5,11 +5,10 @@
 #include <TFile.h>
 #include <TApplication.h>
 
-using namespace ROOT::Experimental;
 
 void DisplayCanvas()
 {
-   auto browser = RNTupleBrowser("poster_tuple", "../example_file.root");
+   auto browser = ROOT::Experimental::RNTupleBrowser("poster_tuple", "../example_file.root");
    browser.Browse();
 }
 int main(int argc, char **argv)
