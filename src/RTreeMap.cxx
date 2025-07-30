@@ -23,7 +23,7 @@ static uint64_t ComputeFnv(const std::string &str)
 
 static RColor ComputeColor(const std::string &str)
 {
-   uint64_t hash = ComputeFnv(str);
+   const uint64_t hash = ComputeFnv(str);
    return RColor((hash >> 16) & 0xFF, (hash >> 8) & 0xFF, hash & 0xFF);
 }
 
