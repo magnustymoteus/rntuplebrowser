@@ -3,8 +3,10 @@
 #include <ROOT/RText.hxx>
 #include <iomanip>
 
-using Point = std::array<float, 2>;
-using Rect = std::array<Point, 2>;
+struct RRect {
+   RVec2 p1, p2;
+   RRect(const RVec2 &p1, const RVec2 &p2) : p1(p1), p2(p2) {}
+};
 
 #define TREEMAP_TEXTCOLOR RColor(255, 255, 255)
 constexpr float INDENTATION_OFFSET = 0.015f;
@@ -63,22 +65,22 @@ static float ComputeWorstRatio(const std::vector<RTreeMappable> &row, float widt
    return worstRatio;
 }
 
-static std::vector<std::pair<RTreeMappable, Rect>> SquarifyChildren(const std::vector<RTreeMappable> &children,
-                                                                    Point begin, Point end, bool horizontalRows,
-                                                                    uint64_t totalSize)
+static std::vector<std::pair<RTreeMappable, RRect>> SquarifyChildren(const std::vector<RTreeMappable> &children,
+                                                                     RVec2 begin, RVec2 end, bool horizontalRows,
+                                                                     uint64_t totalSize)
 {
-   float width = end[0] - begin[0];
-   float height = end[1] - begin[1];
+   float width = end.x - begin.x;
+   float height = end.y - begin.y;
    std::vector<RTreeMappable> remainingChildren = children;
    std::sort(remainingChildren.begin(), remainingChildren.end(),
              [](const RTreeMappable &a, const RTreeMappable &b) { return a.GetSize() > b.GetSize(); });
-   std::vector<std::pair<RTreeMappable, Rect>> result;
-   Point remainingBegin = begin;
+   std::vector<std::pair<RTreeMappable, RRect>> result;
+   RVec2 remainingBegin = begin;
    while (!remainingChildren.empty()) {
       std::vector<RTreeMappable> row;
       float currentWorstRatio = std::numeric_limits<float>::max();
-      float remainingWidth = end[0] - remainingBegin[0];
-      float remainingHeight = end[1] - remainingBegin[1];
+      float remainingWidth = end.x - remainingBegin.x;
+      float remainingHeight = end.y - remainingBegin.y;
       if (remainingWidth <= 0 || remainingHeight <= 0)
          break;
       while (!remainingChildren.empty()) {
@@ -102,52 +104,52 @@ static std::vector<std::pair<RTreeMappable, Rect>> SquarifyChildren(const std::v
       float position = 0.0f;
       for (const auto &child : row) {
          float childDimension = static_cast<float>(child.GetSize()) / sumRow * (horizontalRows ? width : height);
-         Point childBegin = horizontalRows ? Point{remainingBegin[0] + position, remainingBegin[1]}
-                                           : Point{remainingBegin[0], remainingBegin[1] + position};
-         Point childEnd = horizontalRows
-                             ? Point{remainingBegin[0] + position + childDimension, remainingBegin[1] + dimension}
-                             : Point{remainingBegin[0] + dimension, remainingBegin[1] + position + childDimension};
+         RVec2 childBegin = horizontalRows ? RVec2{remainingBegin.x + position, remainingBegin.y}
+                                           : RVec2{remainingBegin.x, remainingBegin.y + position};
+         RVec2 childEnd = horizontalRows
+                             ? RVec2{remainingBegin.x + position + childDimension, remainingBegin.y + dimension}
+                             : RVec2{remainingBegin.x + dimension, remainingBegin.y + position + childDimension};
          result.push_back({child, {childBegin, childEnd}});
          position += childDimension;
       }
       if (horizontalRows)
-         remainingBegin[1] += dimension;
+         remainingBegin.y += dimension;
       else
-         remainingBegin[0] += dimension;
+         remainingBegin.x += dimension;
    }
    return result;
 }
 /* */
 
-void RTreeMap::DrawTreeMap(const RTreeMappable &element, Point begin, Point end, int depth) const
+void RTreeMap::DrawTreeMap(const RTreeMappable &element, RVec2 begin, RVec2 end, int depth) const
 {
    auto toPad = [](float u) { return 0.125f + u * 0.75f; };
-   Point drawBegin = {toPad(begin[0]), toPad(begin[1])};
-   Point drawEnd = {toPad(end[0]), toPad(end[1])};
+   RVec2 drawBegin = {toPad(begin.x), toPad(begin.y)};
+   RVec2 drawEnd = {toPad(end.x), toPad(end.y)};
    bool isLeaf = (element.GetNChildren() == 0);
 
    RColor boxColor = isLeaf ? element.GetColor() : RColor(100, 100, 100);
-   auto box = fBoxPad->Add<RBox>(RPadPos(drawBegin[0], drawBegin[1]), RPadPos(drawEnd[0], drawEnd[1]));
+   auto box = fBoxPad->Add<RBox>(RPadPos(drawBegin.x, drawBegin.y), RPadPos(drawEnd.x, drawEnd.y));
    box->fill.color = boxColor;
    box->fill.style = RAttrFill::kSolid;
    box->border.color = RColor::kWhite;
 
    const std::string label = element.GetName() + " (" + GetDataStr(element.GetSize()) + ")";
-   RPadPos labelPos = isLeaf ? RPadPos((drawBegin[0] + drawEnd[0]) / 2.0f, (drawBegin[1] + drawEnd[1]) / 2.0f)
-                             : RPadPos(drawBegin[0] + PAD_TEXT_OFFSET, drawEnd[1] + PAD_TEXT_OFFSET);
+   RPadPos labelPos = isLeaf ? RPadPos((drawBegin.x + drawEnd.x) / 2.0f, (drawBegin.y + drawEnd.y) / 2.0f)
+                             : RPadPos(drawBegin.x + PAD_TEXT_OFFSET, drawEnd.y + PAD_TEXT_OFFSET);
    RAttrText::EAlign align = isLeaf ? RAttrText::kCenter : RAttrText::kLeftCenter;
 
    auto text = fTextPad->Add<RText>(labelPos, label);
    text->text.align = align;
-   float rectWidth = end[0] - begin[0];
-   float rectHeight = end[1] - begin[1];
+   float rectWidth = end.x - begin.x;
+   float rectHeight = end.y - begin.y;
    text->text.size = std::min(std::min(rectWidth, rectHeight) * 0.1f, TEXT_SIZE_FACTOR);
    text->text.color = TREEMAP_TEXTCOLOR;
 
    if (!isLeaf) {
       float indent = INDENTATION_OFFSET;
-      Point innerBegin = {begin[0] + indent, begin[1] + indent};
-      Point innerEnd = {end[0] - indent, end[1] - indent};
+      RVec2 innerBegin = {begin.x + indent, begin.y + indent};
+      RVec2 innerEnd = {end.x - indent, end.y - indent};
       std::vector<RTreeMappable> children;
       for (std::uint64_t i = 0; i < element.GetNChildren(); ++i)
          children.push_back(fNodes[element.GetChildrenIdx() + i]);
@@ -156,11 +158,11 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, Point begin, Point end,
          totalSize += child.GetSize();
       if (totalSize == 0)
          return;
-      float width = innerEnd[0] - innerBegin[0];
-      float height = innerEnd[1] - innerBegin[1];
+      float width = innerEnd.x - innerBegin.x;
+      float height = innerEnd.y - innerBegin.y;
       bool horizontalRows = width > height;
       auto childRects = SquarifyChildren(children, innerBegin, innerEnd, horizontalRows, totalSize);
       for (const auto &[child, rect] : childRects)
-         DrawTreeMap(child, rect[0], rect[1], depth + 1);
+         DrawTreeMap(child, rect.p1, rect.p2, depth + 1);
    }
 }

@@ -28,6 +28,11 @@ private:
    RColor fColor;
 };
 
+struct RVec2 {
+   float x, y;
+   RVec2(const float &x, const float &y) : x(x), y(y) {}
+};
+
 class RTreeMap : public RDrawable {
 public:
    RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
@@ -38,7 +43,7 @@ public:
         fBoxPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1))),
         fTextPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1)))
    {
-      DrawTreeMap(fNodes[0], {0, 0}, {1, 1}, 0);
+      DrawTreeMap(fNodes[0], RVec2(0, 0), RVec2(1, 1), 0);
       DrawLegend();
    }
 
@@ -47,7 +52,7 @@ private:
    std::shared_ptr<RPad> fBoxPad;
    std::shared_ptr<RPad> fTextPad;
    const std::map<std::string, RColor> &fColumnLegend;
-   void DrawTreeMap(const RTreeMappable &elem, std::array<float, 2> begin, std::array<float, 2> end, int depth) const;
+   void DrawTreeMap(const RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
    void DrawLegend() const;
 };
 
