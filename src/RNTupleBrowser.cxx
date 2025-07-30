@@ -5,29 +5,25 @@
 #include <cassert>
 #include <ROOT/RColumnElementBase.hxx>
 
-ROOT::Experimental::RTreeMappable
-ROOT::Experimental::RNTupleBrowser::CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc,
-                                                       const std::uint64_t &childrenIdx,
-                                                       const std::uint64_t &nChildren) const
+using namespace ROOT::Experimental;
+
+RTreeMappable RNTupleBrowser::CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc,
+                                                 const std::uint64_t &childrenIdx, const std::uint64_t &nChildren) const
 {
    uint64_t size =
       (fRootId != fldDesc.GetId()) ? fInspector->GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize() : fRootSize;
-   return ROOT::Experimental::RTreeMappable(fldDesc.GetFieldName(), fldDesc.GetTypeName(), size, childrenIdx,
-                                            nChildren);
+   return RTreeMappable(fldDesc.GetFieldName(), fldDesc.GetTypeName(), size, childrenIdx, nChildren);
 }
-ROOT::Experimental::RTreeMappable
-ROOT::Experimental::RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
-                                                       const std::uint64_t &childrenIdx) const
+RTreeMappable RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
+                                                 const std::uint64_t &childrenIdx) const
 {
-   return ROOT::Experimental::RTreeMappable("",
-                                            ROOT::Internal::RColumnElementBase::GetColumnTypeName(colInsp.GetType()),
-                                            colInsp.GetCompressedSize(), childrenIdx, 0);
+   return RTreeMappable("", ROOT::Internal::RColumnElementBase::GetColumnTypeName(colInsp.GetType()),
+                        colInsp.GetCompressedSize(), childrenIdx, 0);
 }
 
-std::vector<ROOT::Experimental::RTreeMappable>
-ROOT::Experimental::RNTupleBrowser::CreateTreeMap(std::set<std::string> &legend) const
+std::vector<RTreeMappable> RNTupleBrowser::CreateTreeMap(std::set<std::string> &legend) const
 {
-   std::vector<ROOT::Experimental::RTreeMappable> nodes;
+   std::vector<RTreeMappable> nodes;
    const auto &descriptor = fInspector->GetDescriptor();
 
    std::queue<std::pair<uint64_t, bool>> queue; // (columnid/fieldid, isfield)
@@ -68,7 +64,7 @@ ROOT::Experimental::RNTupleBrowser::CreateTreeMap(std::set<std::string> &legend)
    return nodes;
 }
 
-void ROOT::Experimental::RNTupleBrowser::Browse() const
+void RNTupleBrowser::Browse() const
 {
    std::set<std::string> legend;
    const auto &treeMap = CreateTreeMap(legend);

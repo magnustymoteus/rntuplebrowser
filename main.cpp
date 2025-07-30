@@ -5,10 +5,9 @@
 #include <TFile.h>
 #include <TApplication.h>
 
-
 void DisplayCanvas()
 {
-   auto browser = ROOT::Experimental::RNTupleBrowser("poster_tuple", "../example_file.root");
+   auto browser = ROOT::Experimental::RNTupleBrowser("mini", "../gg_data.ntuple");
    browser.Browse();
 }
 int main(int argc, char **argv)

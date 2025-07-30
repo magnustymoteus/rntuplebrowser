@@ -29,14 +29,19 @@ private:
    std::string fName, fType;
 };
 
-struct RVec2 {
-   float x, y;
-   RVec2(const float &x, const float &y) : x(x), y(y) {}
-};
-
 class RTreeMap : public RDrawable {
+
 public:
-   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<ROOT::Experimental::RTreeMappable> &nodes,
+   struct RVec2 {
+      float x, y;
+      RVec2(const float &x, const float &y) : x(x), y(y) {}
+   };
+   struct RRect {
+      RVec2 p1, p2;
+      RRect(const RVec2 &p1, const RVec2 &p2) : p1(p1), p2(p2) {}
+   };
+
+   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
             const std::set<std::string> &legend)
       : RDrawable("treemap"),
         fNodes(nodes),
@@ -48,10 +53,10 @@ public:
    }
 
 private:
-   std::vector<ROOT::Experimental::RTreeMappable> fNodes;
+   std::vector<RTreeMappable> fNodes;
    std::shared_ptr<RPad> fBoxPad;
    std::shared_ptr<RPad> fTextPad;
-   void DrawTreeMap(const ROOT::Experimental::RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
+   void DrawTreeMap(const RTreeMappable &elem, RVec2 begin, RVec2 end, int depth) const;
    void DrawLegend(const std::set<std::string> &legend) const;
 };
 } // namespace ROOT::Experimental
