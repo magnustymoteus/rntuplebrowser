@@ -6,7 +6,7 @@
 
 using namespace ROOT::Experimental;
 
-static constexpr float kIndentationOffset = 0.02f;
+static constexpr float kIndentationOffset = 0.005f;
 static constexpr float kPadTextOffset = 0.004f;
 static constexpr float kTextSizeFactor = 0.009f;
 static constexpr const char *kUnits[] = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
@@ -164,7 +164,7 @@ void RTreeMap::DrawTreeMap(const RTreeMappable &element, RTreeMap::RRect rect, i
       float indent = kIndentationOffset;
       RTreeMap::RRect innerRect =
          RTreeMap::RRect(RTreeMap::RVec2(rect.fBottomLeft.x + indent, rect.fBottomLeft.y + indent),
-                         RTreeMap::RVec2(rect.fTopRight.x - indent, rect.fTopRight.y - indent));
+                         RTreeMap::RVec2(rect.fTopRight.x - indent, rect.fTopRight.y - indent * 4.0f));
       std::vector<RTreeMappable> children;
       for (std::uint64_t i = 0; i < element.GetNChildren(); ++i)
          children.push_back(fNodes[element.GetChildrenIdx() + i]);
