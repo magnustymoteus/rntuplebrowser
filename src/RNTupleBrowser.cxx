@@ -1,8 +1,6 @@
 #include <RNTupleBrowser.hxx>
 #include <ROOT/RCanvas.hxx>
-#include <iostream>
 #include <queue>
-#include <cassert>
 #include <ROOT/RColumnElementBase.hxx>
 
 using namespace ROOT::Experimental;
