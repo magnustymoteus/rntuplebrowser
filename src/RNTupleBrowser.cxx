@@ -7,15 +7,15 @@
 
 using namespace ROOT::Experimental;
 
-RTreeMappable RNTupleBrowser::CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc,
-                                                 const std::uint64_t &childrenIdx, const std::uint64_t &nChildren) const
+RTreeMappable RNTupleBrowser::CreateTreeMappable(const ROOT::RFieldDescriptor &fldDesc, std::uint64_t childrenIdx,
+                                                 std::uint64_t nChildren) const
 {
    uint64_t size =
       (fRootId != fldDesc.GetId()) ? fInspector->GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize() : fRootSize;
    return RTreeMappable(fldDesc.GetFieldName(), fldDesc.GetTypeName(), size, childrenIdx, nChildren);
 }
-RTreeMappable RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp,
-                                                 const std::uint64_t &childrenIdx) const
+RTreeMappable
+RNTupleBrowser::CreateTreeMappable(const RNTupleInspector::RColumnInspector &colInsp, std::uint64_t childrenIdx) const
 {
    return RTreeMappable("", ROOT::Internal::RColumnElementBase::GetColumnTypeName(colInsp.GetType()),
                         colInsp.GetCompressedSize(), childrenIdx, 0);
