@@ -1,0 +1,319 @@
+import {ObjectPainter, ensureTCanvas} from 'jsroot';
+import {ENTupleColumnTypes} from "./column_types.mjs";
+
+class TTreeMapPainter extends ObjectPainter {
+   static CONSTANTS = {
+      STROKE_WIDTH : 0.15,
+      STROKE_COLOR: "black",
+
+      COLOR_HOVER_BOOST: 10,
+
+      DATA_UNITS: [ "B", "KB", "MB", "GB", "TB", "PB", "EB" ],
+
+      MAIN_TREEMAP: {LEFT: 0.025, BOTTOM: 0.05, RIGHT: 0.825, TOP: 0.9},
+
+      LEGEND: {
+         START_Y: 0.835,
+         ITEM_HEIGHT: 0.05,
+         BOX_WIDTH: 0.05,
+         TEXT_OFFSET_X: 0.01,
+         TEXT_OFFSET_Y: 0.01,
+         TEXT_LINE_SPACING: 0.015,
+         MAX_ITEMS: 10
+      },
+
+      TEXT: {SIZE_VW: 0.75, MIN_RECT_WIDTH: 0.025, MIN_RECT_HEIGHT: 0.05, PADDING: 10, LEAF_OFFSET_Y: 0.015},
+
+      INDENT: 0.005,
+      LEGEND_INDENT_MULTIPLIER: 4
+   };
+
+   appendRect(begin, end, color, attachHoverEvents = true, strokeColor = TTreeMapPainter.CONSTANTS.STROKE_COLOR,
+              strokeWidth = TTreeMapPainter.CONSTANTS.STROKE_WIDTH)
+   {
+      const rect = this.getG()
+                      .append('rect')
+                      .attr('x', this.axisToSvg('x', begin.x, this.isndc))
+                      .attr('y', this.axisToSvg('y', begin.y, this.isndc))
+                      .attr('width', `${Math.abs(end.x - begin.x) * 100}%`)
+                      .attr('height', `${Math.abs(end.y - begin.y) * 100}%`)
+                      .attr('fill', color)
+                      .attr('stroke', strokeColor)
+                      .attr('stroke-width', strokeWidth)
+                      .attr("pointer-events", "fill");
+
+      if (attachHoverEvents)
+         this.attachHoverEvents(rect);
+      return rect;
+   }
+
+   appendText(content, pos, size, color, anchor = "start")
+   {
+      return this.getG()
+         .append("text")
+         .attr("x", this.axisToSvg("x", pos.x, this.isndc))
+         .attr("y", this.axisToSvg("y", pos.y, this.isndc))
+         .attr("font-size", `${size}vw`)
+         .attr("fill", color)
+         .attr("text-anchor", anchor)
+         .attr("pointer-events", "none")
+         .text(content)
+   }
+
+   getRgbList(rgbStr) { return rgbStr.slice(4, -1).split(",").map((x) => parseInt(x)); }
+
+   toRgbStr(rgbList) { return `rgb(${rgbList.join()})`; }
+
+   attachHoverEvents(element)
+   {
+      const original_color = element.attr("fill");
+      const hovered_color =
+         this.toRgbStr(this.getRgbList(original_color)
+                          .map((color) => Math.min(color + TTreeMapPainter.CONSTANTS.COLOR_HOVER_BOOST, 255)));
+      element.on('mouseenter', () => { element.attr('fill', hovered_color); })
+         .on('mouseleave', () => { element.attr('fill', original_color); })
+         .on('click', () => {/* clicked */});
+   }
+
+
+   computeFnv(a)
+   {
+      const FNV_offset = 14695981039346656037n;
+      const FNV_prime = 1099511628211n;
+      let h = FNV_offset;
+      const val = BigInt(a);
+      for (let i = 0; i < 8; i++) {
+         const octet = val >> BigInt(i * 8) & 0xFFn;
+         h = h ^ octet;
+         h = h * FNV_prime;
+      }
+      return h;
+   }
+
+   computeColor(n)
+   {
+      const hash = Number(this.computeFnv(n) & 0xFFFFFFFFn)
+      const r = (hash >> 16) & 0xFF;
+      const g = (hash >> 8) & 0xFF;
+      const b = hash & 0xFF;
+      return this.toRgbStr([r, g, b]);
+   }
+
+
+   getDataStr(bytes)
+   {
+      const units = TTreeMapPainter.CONSTANTS.DATA_UNITS;
+      const order = Math.floor(Math.log10(bytes) / 3);
+      const finalSize = bytes / Math.pow(1000, order);
+      return `${finalSize.toFixed(2)}${units[order]}`;
+   }
+
+   computeWorstRatio(row, width, height, totalSize, horizontalRows)
+   {
+      if (row.length === 0)
+         return 0;
+
+      const sumRow = row.reduce((sum, child) => sum + child.fSize, 0);
+      if (sumRow === 0)
+         return 0;
+
+      let worstRatio = 0;
+      for (const child of row) {
+         const ratio = horizontalRows ? (child.fSize * width * totalSize) / (sumRow * sumRow * height)
+                                      : (child.fSize * height * totalSize) / (sumRow * sumRow * width);
+         const aspectRatio = Math.max(ratio, 1 / ratio);
+         if (aspectRatio > worstRatio)
+            worstRatio = aspectRatio;
+      }
+      return worstRatio;
+   }
+
+   squarifyChildren(children, rect, horizontalRows, totalSize)
+   {
+      const width = rect.topRight.x - rect.bottomLeft.x;
+      const height = rect.topRight.y - rect.bottomLeft.y;
+      let remaining = [...children ].sort((a, b) => b.fSize - a.fSize);
+      const result = [];
+      let remainingBegin = {...rect.bottomLeft};
+
+      while (remaining.length > 0) {
+         const row = [];
+         let currentWorstRatio = Infinity;
+         const remainingWidth = rect.topRight.x - remainingBegin.x;
+         const remainingHeight = rect.topRight.y - remainingBegin.y;
+
+         if (remainingWidth <= 0 || remainingHeight <= 0)
+            break;
+
+         while (remaining.length > 0) {
+            row.push(remaining.shift());
+            const newWorstRatio =
+               this.computeWorstRatio(row, remainingWidth, remainingHeight, totalSize, horizontalRows);
+            if (newWorstRatio > currentWorstRatio) {
+               remaining.unshift(row.pop());
+               break;
+            }
+            currentWorstRatio = newWorstRatio;
+         }
+
+         const sumRow = row.reduce((sum, child) => sum + child.fSize, 0);
+         if (sumRow === 0)
+            continue;
+
+         const dimension = horizontalRows ? (sumRow / totalSize * height) : (sumRow / totalSize * width);
+         let position = 0;
+
+         for (const child of row) {
+            const childDimension = child.fSize / sumRow * (horizontalRows ? width : height);
+            const childBegin = horizontalRows ? {x : remainingBegin.x + position, y : remainingBegin.y}
+                                              : {x : remainingBegin.x, y : remainingBegin.y + position};
+            const childEnd = horizontalRows
+                                ? {x : remainingBegin.x + position + childDimension, y : remainingBegin.y + dimension}
+                                : {x : remainingBegin.x + dimension, y : remainingBegin.y + position + childDimension};
+
+            result.push({node : child, rect : {bottomLeft : childBegin, topRight : childEnd}});
+            position += childDimension;
+         }
+
+         if (horizontalRows)
+            remainingBegin.y += dimension;
+         else
+            remainingBegin.x += dimension;
+      }
+      return result;
+   }
+
+   drawLegend()
+   {
+      const obj = this.getObject();
+      if (!obj.fNodes)
+         return;
+
+      const diskMap = {};
+      obj.fNodes.forEach(node => {
+         if (node.fNChildren === 0) {
+            diskMap[node.fType] = (diskMap[node.fType] || 0) + node.fSize;
+         }
+      });
+
+      const diskEntries = Object.entries(diskMap)
+                             .sort((a, b) => b[1] - a[1])
+                             .slice(0, TTreeMapPainter.CONSTANTS.LEGEND.MAX_ITEMS)
+                             .filter(([, size ]) => size > 0)
+          .map(([typeNum, size]) => [typeNum, ENTupleColumnTypes[parseInt(typeNum)], size]);
+
+      const legend = TTreeMapPainter.CONSTANTS.LEGEND;
+
+      diskEntries.forEach(([ type, typeName, size ], index) => {
+         const posY = legend.START_Y - index * legend.ITEM_HEIGHT;
+         const posX = legend.START_Y + legend.ITEM_HEIGHT + legend.TEXT_OFFSET_X;
+         const textSize = TTreeMapPainter.CONSTANTS.TEXT.SIZE_VW;
+
+         // legend color box
+         this.appendRect({x : legend.START_Y, y : posY},
+                         {x : legend.START_Y + legend.ITEM_HEIGHT, y : posY - legend.ITEM_HEIGHT},
+                         this.computeColor(type), false);
+
+         // calc percentages and labels
+         const diskOccupPercent = `${(size / obj.fNodes[0].fSize * 100).toFixed(2)}%`;
+         const diskOccup = `(${this.getDataStr(size)} / ${this.getDataStr(obj.fNodes[0].fSize)})`;
+
+         // legend text
+         [typeName, diskOccup, diskOccupPercent].forEach(
+            (content, i) =>
+               this.appendText(content, {x : posX, y : posY - legend.TEXT_OFFSET_Y - legend.TEXT_LINE_SPACING * (i)},
+                               textSize, "black"));
+      });
+   }
+
+   trimText(textElement, rect)
+   {
+      const nodeElem = textElement.node();
+      let textContent = nodeElem.textContent;
+      const availablePx = Math.abs(this.axisToSvg('x', rect.topRight.x, this.isndc) -
+                                   this.axisToSvg('x', rect.bottomLeft.x, this.isndc)) -
+                          TTreeMapPainter.CONSTANTS.TEXT.PADDING;
+
+      while (nodeElem.getComputedTextLength() > availablePx && textContent.length > 0) {
+         textContent = textContent.slice(0, -1);
+         nodeElem.textContent = textContent + '…';
+      }
+      return textContent;
+   }
+
+   drawTreeMap(node, rect, depth = 0)
+   {
+      const isLeaf = node.fNChildren === 0;
+      const color = isLeaf ? this.computeColor(node.fType) : 'rgb(100,100,100)';
+
+      this.appendRect({x : rect.bottomLeft.x, y : rect.topRight.y}, {x : rect.topRight.x, y : rect.bottomLeft.y},
+                      color);
+
+      const rectWidth = rect.topRight.x - rect.bottomLeft.x;
+      const rectHeight = rect.topRight.y - rect.bottomLeft.y;
+      const labelBase = `${node.fName} (${this.getDataStr(node.fSize)})`;
+
+      const textConstants = TTreeMapPainter.CONSTANTS.TEXT;
+      const textSize = (rectWidth <= textConstants.MIN_RECT_WIDTH || rectHeight <= textConstants.MIN_RECT_HEIGHT)
+                          ? 0
+                          : textConstants.SIZE_VW;
+
+      if (textSize > 0) {
+         const textElement = this.appendText(labelBase, {
+            x : rect.bottomLeft.x + (isLeaf ? rectWidth / 2 : TTreeMapPainter.CONSTANTS.INDENT),
+            y : isLeaf ? (rect.bottomLeft.y + rect.topRight.y) / 2 : (rect.topRight.y - textConstants.LEAF_OFFSET_Y)
+         },
+                                             textSize, "white", isLeaf ? "middle" : "start");
+         textElement.textContent = this.trimText(textElement, rect);
+      }
+
+      if (!isLeaf && node.fNChildren > 0) {
+         const obj = this.getObject();
+         const children = obj.fNodes.slice(node.fChildrenIdx, node.fChildrenIdx + node.fNChildren);
+         const totalSize = children.reduce((sum, child) => sum + child.fSize, 0);
+
+         if (totalSize > 0) {
+            const indent = TTreeMapPainter.CONSTANTS.INDENT;
+            const innerRect = {
+               bottomLeft : {x : rect.bottomLeft.x + indent, y : rect.bottomLeft.y + indent},
+               topRight : {
+                  x : rect.topRight.x - indent,
+                  y : rect.topRight.y - indent * TTreeMapPainter.CONSTANTS.LEGEND_INDENT_MULTIPLIER
+               }
+            };
+
+            const width = innerRect.topRight.x - innerRect.bottomLeft.x;
+            const height = innerRect.topRight.y - innerRect.bottomLeft.y;
+            const horizontalRows = width > height;
+
+            const rects = this.squarifyChildren(children, innerRect, horizontalRows, totalSize);
+            rects.forEach(
+               ({node : childNode, rect : childRect}) => { this.drawTreeMap(childNode, childRect, depth + 1); });
+         }
+      }
+   }
+
+   redraw()
+   {
+      const obj = this.getObject();
+      this.createG();
+      this.isndc = true;
+
+      if (obj.fNodes && obj.fNodes.length > 0) {
+         const mainArea = TTreeMapPainter.CONSTANTS.MAIN_TREEMAP;
+         this.drawTreeMap(
+            obj.fNodes[0],
+            {bottomLeft : {x : mainArea.LEFT, y : mainArea.BOTTOM}, topRight : {x : mainArea.RIGHT, y : mainArea.TOP}});
+         this.drawLegend();
+      }
+      return this;
+   }
+}
+
+TTreeMapPainter.draw = function(dom, obj, opt) {
+   const painter = new TTreeMapPainter(dom, obj, opt);
+   return ensureTCanvas(painter, false).then(() => painter.redraw());
+};
+
+import {addDrawFunc} from 'jsroot';
+addDrawFunc({name : 'TTreeMap', func : TTreeMapPainter.draw});
