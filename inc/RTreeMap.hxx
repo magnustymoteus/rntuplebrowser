@@ -1,6 +1,8 @@
 #ifndef TREEMAP_HXX
 #define TREEMAP_HXX
 
+#include "TreeMap.hxx"
+
 #include <ROOT/RDrawable.hxx>
 #include <ROOT/RCanvas.hxx>
 #include <ROOT/RNTuple.hxx>
@@ -9,55 +11,29 @@
 
 namespace ROOT::Experimental {
 
-class RTreeMappable {
+class RTreeMap final : public RDrawable, public TreeMap {
 public:
-   const std::string &GetName() const { return fName; }
-   const std::string &GetType() const { return fType; }
-
-   std::uint64_t GetSize() const { return fSize; }
-   std::uint64_t GetNChildren() const { return fNChildren; }
-   std::uint64_t GetChildrenIdx() const { return fChildrenIdx; }
-
-   RTreeMappable(const std::string name, const std::string type, const std::uint64_t size,
-                 const std::uint64_t childrenIdx, const std::uint64_t nChildren)
-      : fName(name), fType(type), fSize(size), fChildrenIdx(childrenIdx), fNChildren(nChildren)
+      RTreeMap(std::shared_ptr<RCanvas> canvas)
+    : TreeMap(), RDrawable("treemap"),
+      fBoxPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1))),
+      fTextPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1)))
    {
+      DrawTreeMap(fNodes[0], Rect(Vec2(0.025, 0.05), Vec2(0.825, 0.9)), 0);
+      DrawLegend();
    }
-
-private:
-   std::uint64_t fChildrenIdx, fNChildren, fSize;
-   std::string fName, fType;
-};
-
-class RTreeMap : public RDrawable {
-
-public:
-   struct RVec2 {
-      float x, y;
-      RVec2(float x, float y) : x(x), y(y) {}
-   };
-   struct RRect {
-      RVec2 fBottomLeft, fTopRight;
-      RRect(const RVec2 &bottomLeft, const RVec2 &topRight) : fBottomLeft(bottomLeft), fTopRight(topRight) {}
-   };
-
-   RTreeMap(std::shared_ptr<RCanvas> canvas, const std::vector<RTreeMappable> &nodes,
-            const std::set<std::string> &legend)
-      : RDrawable("treemap"),
-        fNodes(nodes),
+   RTreeMap(std::shared_ptr<RCanvas> canvas, const ROOT::Experimental::RNTupleInspector &insp)
+      : TreeMap(insp), RDrawable("treemap"),
         fBoxPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1))),
         fTextPad(canvas->AddPad(RPadPos(0, 0), RPadExtent(1, 1)))
    {
-      DrawTreeMap(fNodes[0], RRect(RVec2(0, 0), RVec2(1, 1)), 0);
-      DrawLegend(legend);
+      DrawTreeMap(fNodes[0], Rect(Vec2(0.025, 0.05), Vec2(0.825, 0.9)), 0);
+      DrawLegend();
    }
-
 private:
-   std::vector<RTreeMappable> fNodes;
    std::shared_ptr<RPad> fBoxPad;
    std::shared_ptr<RPad> fTextPad;
-   void DrawTreeMap(const RTreeMappable &elem, RRect rect, int depth) const;
-   void DrawLegend(const std::set<std::string> &legend) const;
+   void AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const final;
+   void AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color=RGBColor(0,0,0), bool alignCenter=false) const final;
 };
 } // namespace ROOT::Experimental
 

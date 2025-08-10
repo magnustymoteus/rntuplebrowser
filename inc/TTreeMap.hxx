@@ -1,0 +1,32 @@
+//
+// Created by patryk on 04.08.25.
+//
+#ifndef TTREEMAP_HXX
+#define TTREEMAP_HXX
+
+#include "TreeMap.hxx"
+
+#include "TROOT.h"
+#include "TObject.h"
+#include "TCanvas.h"
+#include "TPad.h"
+
+#include <vector>
+
+class TTreeMapNode final : public TreeMapNode, public TObject {
+   public:
+   ClassDef(TTreeMapNode, 1)
+};
+
+class TTreeMap final : public TreeMap, public TObject {
+public:
+   TTreeMap(const ROOT::Experimental::RNTupleInspector &insp) : TreeMap(insp) {}
+   TTreeMap() = default;
+   void Paint(Option_t *opt) override;
+
+   ClassDefOverride(TTreeMap, 1)
+private:
+   void AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const final;
+   void AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color=RGBColor(0,0,0), bool alignCenter=false) const final;
+};
+#endif // TTREEMAP_HXX
