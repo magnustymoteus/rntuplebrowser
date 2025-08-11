@@ -31,4 +31,4 @@ const ENTupleColumnTypes = [
     "kReal32Quant",
     "kMax",
 ]
-export {ENTupleColumnTypes}
+export default ENTupleColumnTypes
