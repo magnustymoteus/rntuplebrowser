@@ -33,6 +33,8 @@ class TTreeMapPainter extends ObjectPainter {
    {
       super(dom, obj, opt);
       this.tooltip = new TTreeMapTooltip(this);
+      this.rootIndex = 0;
+      this.parentIndices = []
    }
 
    appendRect(begin, end, color, strokeColor = TTreeMapPainter.CONSTANTS.STROKE_COLOR,
@@ -98,8 +100,24 @@ class TTreeMapPainter extends ObjectPainter {
             this.tooltip.hideTooltip();
          }
       };
+      const click = () => {
+         if(node.fNChildren > 0) {
+            const obj = this.getObject();
+            const nodeIndex = obj.fNodes.findIndex((elem) => elem === node);
+            if(nodeIndex === this.rootIndex) this.rootIndex = 0;
+            else this.rootIndex = nodeIndex;
+            this.redraw();
+         }
+      }
+      const contextMenu = (e) => {
+         e.preventDefault();
+         const obj = this.getObject();
+         this.rootIndex = this.parentIndices[obj.fNodes.findIndex((elem) => elem === node)];
+         this.redraw();
+      }
       this.attachPointerEvents(
-         element, {mouseEnter : mouseEnter, mouseLeave : mouseLeave, mouseMove : mouseMove, click : () => {}});
+         element, {'mouseenter' : mouseEnter, 'mouseleave' : mouseLeave, 'mousemove' : mouseMove,
+             'click': click, 'contextmenu': contextMenu});
    }
    attachPointerEventsLegend(element, type)
    {
@@ -107,19 +125,16 @@ class TTreeMapPainter extends ObjectPainter {
       const mouseEnter = () => {
          rects.filter((node) => node !== undefined && ENTupleColumnTypes[node.fType] !== type).attr('opacity', '0.5');
       };
-      const mouseLeave = () => {
-         rects.attr("opacity", "1");
-      };
+      const mouseLeave = () => { rects.attr("opacity", "1"); };
       this.attachPointerEvents(
-         element, {mouseEnter : mouseEnter, mouseLeave : mouseLeave, mouseMove : () => {}, click : () => {}});
+         element, {'mouseenter' : mouseEnter, 'mouseleave' : mouseLeave, 'mousemove' : () => {},
+             'click' : () => {}});
    }
 
-   attachPointerEvents(element, events)
-   {
-      element.on('mouseenter', events.mouseEnter)
-         .on('mouseleave', events.mouseLeave)
-         .on('mousemove', events.mouseMove)
-         .on('click', events.click);
+   attachPointerEvents(element, events) {
+      for (const [key, value] of Object.entries(events)) {
+         element.on(key, value)
+      }
    }
 
    computeFnv(a)
@@ -142,7 +157,7 @@ class TTreeMapPainter extends ObjectPainter {
       const r = (hash >> 16) & 0xFF;
       const g = (hash >> 8) & 0xFF;
       const b = hash & 0xFF;
-      return this.toRgbStr([ r, g, b, 255]);
+      return this.toRgbStr([ r, g, b, 255 ]);
    }
 
    getDataStr(bytes)
@@ -231,15 +246,14 @@ class TTreeMapPainter extends ObjectPainter {
    drawLegend()
    {
       const obj = this.getObject();
-      if (!obj.fNodes)
-         return;
-
       const diskMap = {};
-      obj.fNodes.forEach(node => {
-         if (node.fNChildren === 0) {
-            diskMap[node.fType] = (diskMap[node.fType] || 0) + node.fSize;
-         }
-      });
+
+      let stack = [this.rootIndex]
+      while(stack.length > 0) {
+         const node = obj.fNodes[stack.pop()]
+         if(node.fNChildren === 0) diskMap[node.fType] = (diskMap[node.fType] || 0) + node.fSize;
+         stack = stack.concat(Array.from({length: node.fNChildren}, (_, a) => a + node.fChildrenIdx));
+      }
 
       const diskEntries = Object.entries(diskMap)
                              .sort((a, b) => b[1] - a[1])
@@ -256,13 +270,13 @@ class TTreeMapPainter extends ObjectPainter {
 
          // legend color box
          const rect = this.appendRect({x : legend.START_Y, y : posY},
-                         {x : legend.START_Y + legend.ITEM_HEIGHT, y : posY - legend.ITEM_HEIGHT},
-                         this.computeColor(type));
+                                      {x : legend.START_Y + legend.ITEM_HEIGHT, y : posY - legend.ITEM_HEIGHT},
+                                      this.computeColor(type));
          this.attachPointerEventsLegend(rect, typeName);
 
          // calc percentages and labels
-         const diskOccupPercent = `${(size / obj.fNodes[0].fSize * 100).toFixed(2)}%`;
-         const diskOccup = `(${this.getDataStr(size)} / ${this.getDataStr(obj.fNodes[0].fSize)})`;
+         const diskOccupPercent = `${(size / obj.fNodes[this.rootIndex].fSize * 100).toFixed(2)}%`;
+         const diskOccup = `(${this.getDataStr(size)} / ${this.getDataStr(obj.fNodes[this.rootIndex].fSize)})`;
 
          // legend text
          [typeName, diskOccup, diskOccupPercent].forEach(
@@ -293,7 +307,6 @@ class TTreeMapPainter extends ObjectPainter {
       const color = isLeaf ? this.computeColor(node.fType) : `rgb(100,100,100)`;
       this.appendRect({x : rect.bottomLeft.x, y : rect.topRight.y}, {x : rect.topRight.x, y : rect.bottomLeft.y}, color,
                       TTreeMapPainter.CONSTANTS.STROKE_COLOR, TTreeMapPainter.CONSTANTS.STROKE_WIDTH, node);
-
 
       const rectWidth = rect.topRight.x - rect.bottomLeft.x;
       const rectHeight = rect.topRight.y - rect.bottomLeft.y;
@@ -338,7 +351,15 @@ class TTreeMapPainter extends ObjectPainter {
          }
       }
    }
-
+   createParentIndices() {
+      const obj = this.getObject();
+      this.parentIndices = new Array(obj.fNodes.length).fill(0);
+      obj.fNodes.forEach((node, index) => {
+         for(let i=node.fChildrenIdx;i<node.fChildrenIdx+node.fNChildren;i++) {
+            this.parentIndices[i] = index
+         }
+      })
+   }
    redraw()
    {
       const obj = this.getObject();
@@ -346,9 +367,9 @@ class TTreeMapPainter extends ObjectPainter {
       this.isndc = true;
 
       if (obj.fNodes && obj.fNodes.length > 0) {
+         this.createParentIndices()
          const mainArea = TTreeMapPainter.CONSTANTS.MAIN_TREEMAP;
-         this.drawTreeMap(
-            obj.fNodes[0],
+         this.drawTreeMap(obj.fNodes[this.rootIndex],
             {bottomLeft : {x : mainArea.LEFT, y : mainArea.BOTTOM}, topRight : {x : mainArea.RIGHT, y : mainArea.TOP}});
          this.drawLegend();
       }
