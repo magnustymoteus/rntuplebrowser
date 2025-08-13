@@ -7,8 +7,9 @@ include_directories(${ROOT_INCLUDE_DIRS} inc)
 link_directories(${ROOT_LIBRARY_DIRS})
 
 set(TREEMAP_HEADER   ${CMAKE_CURRENT_SOURCE_DIR}/inc/TTreeMap.hxx
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMap.hxx
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc/TreeMap.hxx)
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapBase.hxx
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapImporter.hxx
+)
 set(TREEMAP_LINKDEF  ${CMAKE_CURRENT_SOURCE_DIR}/inc/LinkDef.h)
 
 root_generate_dictionary(
@@ -21,8 +22,8 @@ root_generate_dictionary(
 set(SRC_FILES
         main.cpp
         src/TTreeMap.cxx
-        src/RTreeMap.cxx
-        src/TreeMap.cxx
+        src/RTreeMapBase.cxx
+        src/RTreeMapImporter.cxx
         ${CMAKE_CURRENT_BINARY_DIR}/TreeMapDict.cxx
 )
 

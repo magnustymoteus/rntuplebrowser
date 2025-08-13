@@ -3,16 +3,11 @@
 //
 #include "TTreeMap.hxx"
 
-#include <ROOT/RColumnElementBase.hxx>
-
 #include <TCanvas.h>
 #include <TPad.h>
 #include <TBox.h>
 #include <TLatex.h>
 #include <TColor.h>
-
-#include <cmath>
-#include <queue>
 
 void TTreeMap::Paint(Option_t *)
 {
@@ -24,14 +19,17 @@ void TTreeMap::Paint(Option_t *)
    DrawTreeMap(fNodes[0], Rect(Vec2(0.025, 0.05), Vec2(0.825, 0.9)), 0);
    DrawLegend();
 }
-void TTreeMap::AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const {
+void TTreeMap::AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const
+{
    auto box = new TBox(rect.fBottomLeft.x, rect.fBottomLeft.y, rect.fTopRight.x, rect.fTopRight.y);
    box->SetFillColor(TColor::GetColor(color.r, color.g, color.b, color.a));
    box->SetLineColor(kGray);
    box->SetLineWidth(std::ceil(borderWidth));
    box->Draw("l");
 }
-void TTreeMap::AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color, bool alignCenter) const {
+void TTreeMap::AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color,
+                       bool alignCenter) const
+{
    TLatex t;
    t.SetTextFont(42);
    t.SetTextSize(size);
