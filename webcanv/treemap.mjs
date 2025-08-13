@@ -81,12 +81,14 @@ class TTreeMapPainter extends ObjectPainter {
       const hovered_color =
          this.toRgbStr(this.getRgbList(original_color)
                           .map((color) => Math.min(color + TTreeMapPainter.CONSTANTS.COLOR_HOVER_BOOST, 255)));
+      let currentMouseX = 0;
+      let currentMouseY = 0;
       const mouseEnter = (event) => {
          element.attr('fill', hovered_color);
          this.tooltip.clearTooltipTimeout();
          this.tooltip.tooltipTimeout = setTimeout(() => {
             const tooltipContent = this.tooltip.generateTooltipContent(node);
-            this.tooltip.showTooltip(tooltipContent, event.pageX, event.pageY);
+            this.tooltip.showTooltip(tooltipContent, currentMouseX, currentMouseY);
          }, TTreeMapTooltip.CONSTANTS.DELAY);
       };
       const mouseLeave = () => {
@@ -94,30 +96,38 @@ class TTreeMapPainter extends ObjectPainter {
          this.tooltip.clearTooltipTimeout();
          this.tooltip.hideTooltip();
       };
-      const mouseMove = () => {
+      const mouseMove = (event) => {
+         currentMouseX = event.pageX;
+         currentMouseY = event.pageY;
          if (this.tooltip.tooltip && this.tooltip.tooltip.style.opacity === '1') {
             this.tooltip.clearTooltipTimeout();
             this.tooltip.hideTooltip();
          }
       };
       const click = () => {
-         if(node.fNChildren > 0) {
+         if (node.fNChildren > 0) {
             const obj = this.getObject();
             const nodeIndex = obj.fNodes.findIndex((elem) => elem === node);
-            if(nodeIndex === this.rootIndex) this.rootIndex = 0;
-            else this.rootIndex = nodeIndex;
+            if (nodeIndex === this.rootIndex)
+               this.rootIndex = 0;
+            else
+               this.rootIndex = nodeIndex;
             this.redraw();
          }
-      }
+      };
       const contextMenu = (e) => {
          e.preventDefault();
          const obj = this.getObject();
          this.rootIndex = this.parentIndices[obj.fNodes.findIndex((elem) => elem === node)];
          this.redraw();
-      }
-      this.attachPointerEvents(
-         element, {'mouseenter' : mouseEnter, 'mouseleave' : mouseLeave, 'mousemove' : mouseMove,
-             'click': click, 'contextmenu': contextMenu});
+      };
+      this.attachPointerEvents(element, {
+         'mouseenter' : mouseEnter,
+         'mouseleave' : mouseLeave,
+         'mousemove' : mouseMove,
+         'click' : click,
+         'contextmenu' : contextMenu
+      });
    }
    attachPointerEventsLegend(element, type)
    {
@@ -127,11 +137,11 @@ class TTreeMapPainter extends ObjectPainter {
       };
       const mouseLeave = () => { rects.attr("opacity", "1"); };
       this.attachPointerEvents(
-         element, {'mouseenter' : mouseEnter, 'mouseleave' : mouseLeave, 'mousemove' : () => {},
-             'click' : () => {}});
+         element, {'mouseenter' : mouseEnter, 'mouseleave' : mouseLeave, 'mousemove' : () => {}, 'click' : () => {}});
    }
 
-   attachPointerEvents(element, events) {
+   attachPointerEvents(element, events)
+   {
       for (const [key, value] of Object.entries(events)) {
          element.on(key, value)
       }
@@ -248,11 +258,12 @@ class TTreeMapPainter extends ObjectPainter {
       const obj = this.getObject();
       const diskMap = {};
 
-      let stack = [this.rootIndex]
-      while(stack.length > 0) {
-         const node = obj.fNodes[stack.pop()]
-         if(node.fNChildren === 0) diskMap[node.fType] = (diskMap[node.fType] || 0) + node.fSize;
-         stack = stack.concat(Array.from({length: node.fNChildren}, (_, a) => a + node.fChildrenIdx));
+      let stack = [ this.rootIndex ];
+      while (stack.length > 0) {
+         const node = obj.fNodes[stack.pop()];
+         if (node.fNChildren === 0)
+            diskMap[node.fType] = (diskMap[node.fType] || 0) + node.fSize;
+         stack = stack.concat(Array.from({length : node.fNChildren}, (_, a) => a + node.fChildrenIdx));
       }
 
       const diskEntries = Object.entries(diskMap)
@@ -351,11 +362,12 @@ class TTreeMapPainter extends ObjectPainter {
          }
       }
    }
-   createParentIndices() {
+   createParentIndices()
+   {
       const obj = this.getObject();
       this.parentIndices = new Array(obj.fNodes.length).fill(0);
       obj.fNodes.forEach((node, index) => {
-         for(let i=node.fChildrenIdx;i<node.fChildrenIdx+node.fNChildren;i++) {
+         for (let i = node.fChildrenIdx; i < node.fChildrenIdx + node.fNChildren; i++) {
             this.parentIndices[i] = index
          }
       })
@@ -369,7 +381,8 @@ class TTreeMapPainter extends ObjectPainter {
       if (obj.fNodes && obj.fNodes.length > 0) {
          this.createParentIndices()
          const mainArea = TTreeMapPainter.CONSTANTS.MAIN_TREEMAP;
-         this.drawTreeMap(obj.fNodes[this.rootIndex],
+         this.drawTreeMap(
+            obj.fNodes[this.rootIndex],
             {bottomLeft : {x : mainArea.LEFT, y : mainArea.BOTTOM}, topRight : {x : mainArea.RIGHT, y : mainArea.TOP}});
          this.drawLegend();
       }
