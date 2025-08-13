@@ -1,6 +1,5 @@
 import {ObjectPainter, ensureTCanvas} from 'jsroot';
-import ENTupleColumnTypes from "./column_types.mjs";
-import TTreeMapTooltip from "./tooltip.mjs";
+import TTreeMapTooltip from "./TTreeMapTooltip.mjs";
 
 class TTreeMapPainter extends ObjectPainter {
    static CONSTANTS = {

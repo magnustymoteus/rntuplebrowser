@@ -1,5 +1,3 @@
-import ENTupleColumnTypes from "./column_types.mjs";
-
 class TTreeMapTooltip {
    static CONSTANTS = {DELAY : 1000, OFFSET_X: 10, OFFSET_Y: -10, PADDING: 8, BORDER_RADIUS: 4};
 
