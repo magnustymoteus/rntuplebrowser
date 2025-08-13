@@ -66,8 +66,7 @@ class TTreeMapTooltip {
       content += `Size: ${this.painter.getDataStr(node.fSize)}<br>`;
 
       if (isLeaf && node.fType !== undefined) {
-         const typeName = ENTupleColumnTypes[node.fType] || `Type ${node.fType}`;
-         content += `Type: ${typeName}<br>`;
+         content += `Type: ${node.fType}<br>`;
       }
 
       if (!isLeaf) {

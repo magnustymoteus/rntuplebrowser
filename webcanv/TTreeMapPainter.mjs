@@ -131,9 +131,8 @@ class TTreeMapPainter extends ObjectPainter {
    attachPointerEventsLegend(element, type)
    {
       const rects = this.getG().selectAll("rect");
-      const mouseEnter = () => {
-         rects.filter((node) => node !== undefined && ENTupleColumnTypes[node.fType] !== type).attr('opacity', '0.5');
-      };
+      const mouseEnter =
+         () => { rects.filter((node) => node !== undefined && node.fType !== type).attr('opacity', '0.5'); };
       const mouseLeave = () => { rects.attr("opacity", "1"); };
       this.attachPointerEvents(
          element, {'mouseenter' : mouseEnter, 'mouseleave' : mouseLeave, 'mousemove' : () => {}, 'click' : () => {}});
@@ -146,14 +145,13 @@ class TTreeMapPainter extends ObjectPainter {
       }
    }
 
-   computeFnv(a)
+   computeFnv(str)
    {
       const FNV_offset = 14695981039346656037n;
       const FNV_prime = 1099511628211n;
       let h = FNV_offset;
-      const val = BigInt(a);
-      for (let i = 0; i < 8; i++) {
-         const octet = val >> BigInt(i * 8) & 0xFFn;
+      for (let i = 0; i < str.length; ++i) {
+         const octet = BigInt(str.charCodeAt(i) & 0xFF);
          h = h ^ octet;
          h = h * FNV_prime;
       }
@@ -162,11 +160,11 @@ class TTreeMapPainter extends ObjectPainter {
 
    computeColor(n)
    {
-      const hash = Number(this.computeFnv(n) & 0xFFFFFFFFn)
+      const hash = Number(this.computeFnv(String(n)) & 0xFFFFFFFFn)
       const r = (hash >> 16) & 0xFF;
       const g = (hash >> 8) & 0xFF;
       const b = hash & 0xFF;
-      return this.toRgbStr([ r, g, b, 255 ]);
+      return this.toRgbStr([ r, g, b ]);
    }
 
    getDataStr(bytes)
@@ -269,26 +267,22 @@ class TTreeMapPainter extends ObjectPainter {
                              .sort((a, b) => b[1] - a[1])
                              .slice(0, TTreeMapPainter.CONSTANTS.LEGEND.MAX_ITEMS)
                              .filter(([, size ]) => size > 0)
-                             .map(([ typeNum, size ]) => [typeNum, ENTupleColumnTypes[parseInt(typeNum)], size]);
 
       const legend = TTreeMapPainter.CONSTANTS.LEGEND;
 
-      diskEntries.forEach(([ type, typeName, size ], index) => {
+      diskEntries.forEach(([ typeName, size ], index) => {
          const posY = legend.START_Y - index * legend.ITEM_HEIGHT;
          const posX = legend.START_Y + legend.ITEM_HEIGHT + legend.TEXT_OFFSET_X;
          const textSize = TTreeMapPainter.CONSTANTS.TEXT.SIZE_VW;
 
-         // legend color box
          const rect = this.appendRect({x : legend.START_Y, y : posY},
                                       {x : legend.START_Y + legend.ITEM_HEIGHT, y : posY - legend.ITEM_HEIGHT},
-                                      this.computeColor(type));
+                                      this.computeColor(typeName));
          this.attachPointerEventsLegend(rect, typeName);
 
-         // calc percentages and labels
          const diskOccupPercent = `${(size / obj.fNodes[this.rootIndex].fSize * 100).toFixed(2)}%`;
          const diskOccup = `(${this.getDataStr(size)} / ${this.getDataStr(obj.fNodes[this.rootIndex].fSize)})`;
 
-         // legend text
          [typeName, diskOccup, diskOccupPercent].forEach(
             (content, i) =>
                this.appendText(content, {x : posX, y : posY - legend.TEXT_OFFSET_Y - legend.TEXT_LINE_SPACING * (i)},
