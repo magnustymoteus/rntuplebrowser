@@ -13,13 +13,13 @@
 
 #include <vector>
 
-class TTreeMapNode final : public TreeMapNode, public TObject {
-   public:
-   ClassDef(TTreeMapNode, 1)
-};
-
 class TTreeMap final : public TreeMap, public TObject {
 public:
+   struct Node final : public TreeMap::Node, public TObject {
+   public:
+      ClassDef(Node, 1)
+   };
+
    TTreeMap(const ROOT::Experimental::RNTupleInspector &insp) : TreeMap(insp) {}
    TTreeMap() = default;
    void Paint(Option_t *opt) override;

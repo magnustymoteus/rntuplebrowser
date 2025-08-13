@@ -3,7 +3,5 @@
 #pragma link off all classes;
 #pragma link off all functions;
 #pragma link C++ class TreeMap+;
-#pragma link C++ class TreeMapNode+;
 #pragma link C++ class TTreeMap+;
-#pragma link C++ class TTreeMapNode+;
 #endif

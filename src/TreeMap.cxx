@@ -63,18 +63,18 @@ struct DiskOccupation {
       return fName == other.fName;
    }
 };
-static std::array<uint64_t, kColumnTypes> GetDiskOccupation(const std::vector<TreeMapNode> &nodes)
+static std::array<uint64_t, kColumnTypes> GetDiskOccupation(const std::vector<TreeMap::Node> &nodes)
 {
    std::array<uint64_t, kColumnTypes> arr {};
    for (const auto &node : nodes) {
       if (node.fNChildren > 0)
          continue;
-      arr[node.fType] += node.fSize;
+      arr[node.fType.fId] += node.fSize;
    }
    return arr;
 }
 /* algorithm: https://vanwijk.win.tue.nl/stm.pdf */
-static float ComputeWorstRatio(const std::vector<TreeMapNode> &row, float width, float height, uint64_t totalSize,
+static float ComputeWorstRatio(const std::vector<TreeMap::Node> &row, float width, float height, uint64_t totalSize,
                                bool horizontalRows)
 {
    if (row.empty())
@@ -95,19 +95,19 @@ static float ComputeWorstRatio(const std::vector<TreeMapNode> &row, float width,
    }
    return worstRatio;
 }
-static std::vector<std::pair<TreeMapNode, TreeMap::Rect>> SquarifyChildren(const std::vector<TreeMapNode> &children,
+static std::vector<std::pair<TreeMap::Node, TreeMap::Rect>> SquarifyChildren(const std::vector<TreeMap::Node> &children,
                                                                               TreeMap::Rect rect, bool horizontalRows,
                                                                               uint64_t totalSize)
 {
    float width = rect.fTopRight.x - rect.fBottomLeft.x;
    float height = rect.fTopRight.y - rect.fBottomLeft.y;
-   std::vector<TreeMapNode> remainingChildren = children;
+   std::vector<TreeMap::Node> remainingChildren = children;
    std::sort(remainingChildren.begin(), remainingChildren.end(),
-             [](const TreeMapNode &a, const TreeMapNode &b) { return a.fSize > b.fSize; });
-   std::vector<std::pair<TreeMapNode, TreeMap::Rect>> result;
+             [](const TreeMap::Node &a, const TreeMap::Node &b) { return a.fSize > b.fSize; });
+   std::vector<std::pair<TreeMap::Node, TreeMap::Rect>> result;
    TreeMap::Vec2 remainingBegin = rect.fBottomLeft;
    while (!remainingChildren.empty()) {
-      std::vector<TreeMapNode> row;
+      std::vector<TreeMap::Node> row;
       float currentWorstRatio = std::numeric_limits<float>::max();
       float remainingWidth = rect.fTopRight.x - remainingBegin.x;
       float remainingHeight = rect.fTopRight.y - remainingBegin.y;
@@ -175,12 +175,12 @@ void TreeMap::DrawLegend() const
       counter++;
    }
 }
-void TreeMap::DrawTreeMap(const TreeMapNode &element, TreeMap::Rect rect, int depth) const
+void TreeMap::DrawTreeMap(const TreeMap::Node &element, TreeMap::Rect rect, int depth) const
 {
    TreeMap::Rect drawRect = TreeMap::Rect(TreeMap::Vec2(rect.fBottomLeft.x, rect.fBottomLeft.y),
                                               TreeMap::Vec2(rect.fTopRight.x, rect.fTopRight.y));
    bool isLeaf = (element.fNChildren == 0);
-   TreeMap::RGBColor boxColor = isLeaf ? ComputeColor(element.fType) : TreeMap::RGBColor(100, 100, 100);
+   TreeMap::RGBColor boxColor = isLeaf ? ComputeColor(element.fType.fId) : TreeMap::RGBColor(100, 100, 100);
    AddBox(drawRect, boxColor, 0.15f);
 
    const std::string label = element.fName + " (" + GetDataStr(element.fSize) + ")";
@@ -199,7 +199,7 @@ void TreeMap::DrawTreeMap(const TreeMapNode &element, TreeMap::Rect rect, int de
       TreeMap::Rect innerRect =
          TreeMap::Rect(TreeMap::Vec2(rect.fBottomLeft.x + indent, rect.fBottomLeft.y + indent),
                          TreeMap::Vec2(rect.fTopRight.x - indent, rect.fTopRight.y - indent * 4.0f));
-      std::vector<TreeMapNode> children;
+      std::vector<TreeMap::Node> children;
       for (std::uint64_t i = 0; i < element.fNChildren; ++i)
          children.push_back(fNodes[element.fChildrenIdx + i]);
       uint64_t totalSize = 0;
@@ -215,19 +215,18 @@ void TreeMap::DrawTreeMap(const TreeMapNode &element, TreeMap::Rect rect, int de
          DrawTreeMap(child, rect, depth + 1);
    }
 }
-static TreeMapNode CreateTreeMappable(const ROOT::Experimental::RNTupleInspector &insp, const ROOT::RFieldDescriptor &fldDesc,
+static TreeMap::Node CreateNode(const ROOT::Experimental::RNTupleInspector &insp, const ROOT::RFieldDescriptor &fldDesc,
                                        std::uint64_t childrenIdx, std::uint64_t nChildren, ROOT::DescriptorId_t rootId,
                                        size_t rootSize)
 {
    uint64_t size =
       (rootId != fldDesc.GetId()) ? insp.GetFieldTreeInspector(fldDesc.GetId()).GetCompressedSize() : rootSize;
-   auto type = fldDesc.GetTypeChecksum();
-   return TreeMapNode(fldDesc.GetFieldName(), type ? type.value() : 0, size, childrenIdx, nChildren);
+   return TreeMap::Node(fldDesc.GetFieldName(), TreeMap::Node::Type("Field", 0), size, childrenIdx, nChildren);
 }
-static TreeMapNode CreateTreeMappable(const ROOT::Experimental::RNTupleInspector::RColumnInspector &colInsp, std::uint64_t childrenIdx)
+static TreeMap::Node CreateNode(const ROOT::Experimental::RNTupleInspector::RColumnInspector &colInsp, std::uint64_t childrenIdx)
 {
-   return TreeMapNode("", static_cast<uint8_t>(colInsp.GetType()),
-                       colInsp.GetCompressedSize(), childrenIdx, 0);
+   return TreeMap::Node("", TreeMap::Node::Type(ROOT::Internal::RColumnElementBase::GetColumnTypeName(colInsp.GetType()), static_cast<uint64_t>(colInsp.GetType())),
+                      colInsp.GetCompressedSize(), childrenIdx, 0);
 }
 TreeMap::TreeMap(const ROOT::Experimental::RNTupleInspector &insp)
 {
@@ -261,11 +260,11 @@ TreeMap::TreeMap(const ROOT::Experimental::RNTupleInspector &insp)
                queue.push({columnId, 0});
             }
             nChildren = children.size();
-            const auto &node = CreateTreeMappable(insp, fldDesc, levelChildrenStart, nChildren, rootId, rootSize);
+            const auto &node = CreateNode(insp, fldDesc, levelChildrenStart, nChildren, rootId, rootSize);
             fNodes.push_back(node);
          } else {
             const auto &colInsp = insp.GetColumnInspector(current.first);
-            const auto &node = CreateTreeMappable(colInsp, levelChildrenStart);
+            const auto &node = CreateNode(colInsp, levelChildrenStart);
             fNodes.push_back(node);
          }
 
