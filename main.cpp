@@ -18,7 +18,7 @@ void DisplayCanvas(bool disableJs=false)
   if(!disableJs) {
   ROOT::RWebWindowsManager::AddServerLocation("webcanv", "../webcanv");
   TWebCanvas::AddCustomClass("TTreeMap");
-  TWebCanvas::SetCustomScripts("modules:webcanv/treemap.mjs");
+  TWebCanvas::SetCustomScripts("modules:webcanv/TTreeMapPainter.mjs");
   }
   auto importer = ROOT::Experimental::RTreeMapImporter::Create(kFileName, kTupleName);
   auto c = new TCanvas("c_tm","TreeMap");
