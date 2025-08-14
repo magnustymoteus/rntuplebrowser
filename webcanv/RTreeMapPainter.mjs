@@ -1,7 +1,7 @@
 import {ObjectPainter, ensureTCanvas} from 'jsroot';
-import TTreeMapTooltip from "./TTreeMapTooltip.mjs";
+import RTreeMapTooltip from "./RTreeMapTooltip.mjs";
 
-class TTreeMapPainter extends ObjectPainter {
+class RTreeMapPainter extends ObjectPainter {
    static CONSTANTS = {
       STROKE_WIDTH : 0.15,
       STROKE_COLOR: "black",
@@ -31,13 +31,13 @@ class TTreeMapPainter extends ObjectPainter {
    constructor(dom, obj, opt)
    {
       super(dom, obj, opt);
-      this.tooltip = new TTreeMapTooltip(this);
+      this.tooltip = new RTreeMapTooltip(this);
       this.rootIndex = 0;
       this.parentIndices = []
    }
 
-   appendRect(begin, end, color, strokeColor = TTreeMapPainter.CONSTANTS.STROKE_COLOR,
-              strokeWidth = TTreeMapPainter.CONSTANTS.STROKE_WIDTH, node = null)
+   appendRect(begin, end, color, strokeColor = RTreeMapPainter.CONSTANTS.STROKE_COLOR,
+              strokeWidth = RTreeMapPainter.CONSTANTS.STROKE_WIDTH, node = null)
    {
       const rect = this.getG()
                       .append('rect')
@@ -79,7 +79,7 @@ class TTreeMapPainter extends ObjectPainter {
       const original_color = element.attr("fill");
       const hovered_color =
          this.toRgbStr(this.getRgbList(original_color)
-                          .map((color) => Math.min(color + TTreeMapPainter.CONSTANTS.COLOR_HOVER_BOOST, 255)));
+                          .map((color) => Math.min(color + RTreeMapPainter.CONSTANTS.COLOR_HOVER_BOOST, 255)));
       let currentMouseX = 0;
       let currentMouseY = 0;
       const mouseEnter = (event) => {
@@ -88,7 +88,7 @@ class TTreeMapPainter extends ObjectPainter {
          this.tooltip.tooltipTimeout = setTimeout(() => {
             const tooltipContent = this.tooltip.generateTooltipContent(node);
             this.tooltip.showTooltip(tooltipContent, currentMouseX, currentMouseY);
-         }, TTreeMapTooltip.CONSTANTS.DELAY);
+         }, RTreeMapTooltip.CONSTANTS.DELAY);
       };
       const mouseLeave = () => {
          element.attr('fill', original_color);
@@ -169,7 +169,7 @@ class TTreeMapPainter extends ObjectPainter {
 
    getDataStr(bytes)
    {
-      const units = TTreeMapPainter.CONSTANTS.DATA_UNITS;
+      const units = RTreeMapPainter.CONSTANTS.DATA_UNITS;
       const order = Math.floor(Math.log10(bytes) / 3);
       const finalSize = bytes / Math.pow(1000, order);
       return `${finalSize.toFixed(2)}${units[order]}`;
@@ -265,15 +265,15 @@ class TTreeMapPainter extends ObjectPainter {
 
       const diskEntries = Object.entries(diskMap)
                              .sort((a, b) => b[1] - a[1])
-                             .slice(0, TTreeMapPainter.CONSTANTS.LEGEND.MAX_ITEMS)
+                             .slice(0, RTreeMapPainter.CONSTANTS.LEGEND.MAX_ITEMS)
                              .filter(([, size ]) => size > 0)
 
-      const legend = TTreeMapPainter.CONSTANTS.LEGEND;
+      const legend = RTreeMapPainter.CONSTANTS.LEGEND;
 
       diskEntries.forEach(([ typeName, size ], index) => {
          const posY = legend.START_Y - index * legend.ITEM_HEIGHT;
          const posX = legend.START_Y + legend.ITEM_HEIGHT + legend.TEXT_OFFSET_X;
-         const textSize = TTreeMapPainter.CONSTANTS.TEXT.SIZE_VW;
+         const textSize = RTreeMapPainter.CONSTANTS.TEXT.SIZE_VW;
 
          const rect = this.appendRect({x : legend.START_Y, y : posY},
                                       {x : legend.START_Y + legend.ITEM_HEIGHT, y : posY - legend.ITEM_HEIGHT},
@@ -296,7 +296,7 @@ class TTreeMapPainter extends ObjectPainter {
       let textContent = nodeElem.textContent;
       const availablePx = Math.abs(this.axisToSvg('x', rect.topRight.x, this.isndc) -
                                    this.axisToSvg('x', rect.bottomLeft.x, this.isndc)) -
-                          TTreeMapPainter.CONSTANTS.TEXT.PADDING;
+                          RTreeMapPainter.CONSTANTS.TEXT.PADDING;
 
       while (nodeElem.getComputedTextLength() > availablePx && textContent.length > 0) {
          textContent = textContent.slice(0, -1);
@@ -310,20 +310,20 @@ class TTreeMapPainter extends ObjectPainter {
       const isLeaf = node.fNChildren === 0;
       const color = isLeaf ? this.computeColor(node.fType) : `rgb(100,100,100)`;
       this.appendRect({x : rect.bottomLeft.x, y : rect.topRight.y}, {x : rect.topRight.x, y : rect.bottomLeft.y}, color,
-                      TTreeMapPainter.CONSTANTS.STROKE_COLOR, TTreeMapPainter.CONSTANTS.STROKE_WIDTH, node);
+                      RTreeMapPainter.CONSTANTS.STROKE_COLOR, RTreeMapPainter.CONSTANTS.STROKE_WIDTH, node);
 
       const rectWidth = rect.topRight.x - rect.bottomLeft.x;
       const rectHeight = rect.topRight.y - rect.bottomLeft.y;
       const labelBase = `${node.fName} (${this.getDataStr(node.fSize)})`;
 
-      const textConstants = TTreeMapPainter.CONSTANTS.TEXT;
+      const textConstants = RTreeMapPainter.CONSTANTS.TEXT;
       const textSize = (rectWidth <= textConstants.MIN_RECT_WIDTH || rectHeight <= textConstants.MIN_RECT_HEIGHT)
                           ? 0
                           : textConstants.SIZE_VW;
 
       if (textSize > 0) {
          const textElement = this.appendText(labelBase, {
-            x : rect.bottomLeft.x + (isLeaf ? rectWidth / 2 : TTreeMapPainter.CONSTANTS.INDENT),
+            x : rect.bottomLeft.x + (isLeaf ? rectWidth / 2 : RTreeMapPainter.CONSTANTS.INDENT),
             y : isLeaf ? (rect.bottomLeft.y + rect.topRight.y) / 2 : (rect.topRight.y - textConstants.LEAF_OFFSET_Y)
          },
                                              textSize, "white", isLeaf ? "middle" : "start");
@@ -336,12 +336,12 @@ class TTreeMapPainter extends ObjectPainter {
          const totalSize = children.reduce((sum, child) => sum + child.fSize, 0);
 
          if (totalSize > 0) {
-            const indent = TTreeMapPainter.CONSTANTS.INDENT;
+            const indent = RTreeMapPainter.CONSTANTS.INDENT;
             const innerRect = {
                bottomLeft : {x : rect.bottomLeft.x + indent, y : rect.bottomLeft.y + indent},
                topRight : {
                   x : rect.topRight.x - indent,
-                  y : rect.topRight.y - indent * TTreeMapPainter.CONSTANTS.LEGEND_INDENT_MULTIPLIER
+                  y : rect.topRight.y - indent * RTreeMapPainter.CONSTANTS.LEGEND_INDENT_MULTIPLIER
                }
             };
 
@@ -373,7 +373,7 @@ class TTreeMapPainter extends ObjectPainter {
 
       if (obj.fNodes && obj.fNodes.length > 0) {
          this.createParentIndices()
-         const mainArea = TTreeMapPainter.CONSTANTS.MAIN_TREEMAP;
+         const mainArea = RTreeMapPainter.CONSTANTS.MAIN_TREEMAP;
          this.drawTreeMap(
             obj.fNodes[this.rootIndex],
             {bottomLeft : {x : mainArea.LEFT, y : mainArea.BOTTOM}, topRight : {x : mainArea.RIGHT, y : mainArea.TOP}});
@@ -383,10 +383,10 @@ class TTreeMapPainter extends ObjectPainter {
    }
 }
 
-TTreeMapPainter.draw = function(dom, obj, opt) {
-   const painter = new TTreeMapPainter(dom, obj, opt);
+RTreeMapPainter.draw = function(dom, obj, opt) {
+   const painter = new RTreeMapPainter(dom, obj, opt);
    return ensureTCanvas(painter, false).then(() => painter.redraw());
 };
 
 import {addDrawFunc} from 'jsroot';
-addDrawFunc({name : 'TTreeMap', func : TTreeMapPainter.draw});
+addDrawFunc({name : 'ROOT::Experimental::RTreeMapPainter', func : RTreeMapPainter.draw});

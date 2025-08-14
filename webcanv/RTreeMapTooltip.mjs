@@ -1,4 +1,4 @@
-class TTreeMapTooltip {
+class RTreeMapTooltip {
    static CONSTANTS = {DELAY : 1000, OFFSET_X: 10, OFFSET_Y: -10, PADDING: 8, BORDER_RADIUS: 4};
 
    constructor(painter)
@@ -18,8 +18,8 @@ class TTreeMapTooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: ${TTreeMapTooltip.CONSTANTS.PADDING}px;
-            border-radius: ${TTreeMapTooltip.CONSTANTS.BORDER_RADIUS}px;
+            padding: ${RTreeMapTooltip.CONSTANTS.PADDING}px;
+            border-radius: ${RTreeMapTooltip.CONSTANTS.BORDER_RADIUS}px;
             font-size: 12px;
             pointer-events: none;
             z-index: 10000;
@@ -37,8 +37,8 @@ class TTreeMapTooltip {
          this.createTooltip();
 
       this.tooltip.innerHTML = content;
-      this.tooltip.style.left = (x + TTreeMapTooltip.CONSTANTS.OFFSET_X) + 'px';
-      this.tooltip.style.top = (y + TTreeMapTooltip.CONSTANTS.OFFSET_Y) + 'px';
+      this.tooltip.style.left = (x + RTreeMapTooltip.CONSTANTS.OFFSET_X) + 'px';
+      this.tooltip.style.top = (y + RTreeMapTooltip.CONSTANTS.OFFSET_Y) + 'px';
       this.tooltip.style.opacity = '1';
    }
 
@@ -84,4 +84,4 @@ class TTreeMapTooltip {
    }
 }
 
-export default TTreeMapTooltip;
+export default RTreeMapTooltip;
