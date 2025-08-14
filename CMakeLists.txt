@@ -6,7 +6,7 @@ find_package(ROOT REQUIRED COMPONENTS RIO Gpad ROOTGpadv7 ROOTBrowserv7 ROOTNTup
 include_directories(${ROOT_INCLUDE_DIRS} inc)
 link_directories(${ROOT_LIBRARY_DIRS})
 
-set(TREEMAP_HEADER   ${CMAKE_CURRENT_SOURCE_DIR}/inc/TTreeMap.hxx
+set(TREEMAP_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapPainter.hxx
         ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapBase.hxx
         ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapImporter.hxx
 )
@@ -21,7 +21,7 @@ root_generate_dictionary(
 
 set(SRC_FILES
         main.cpp
-        src/TTreeMap.cxx
+        src/RTreeMapPainter.cxx
         src/RTreeMapBase.cxx
         src/RTreeMapImporter.cxx
         ${CMAKE_CURRENT_BINARY_DIR}/TreeMapDict.cxx

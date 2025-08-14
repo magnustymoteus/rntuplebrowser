@@ -31,9 +31,9 @@ CreateNode(const ROOT::Experimental::RNTupleInspector::RColumnInspector &colInsp
                              colInsp.GetCompressedSize(), childrenIdx, 0);
 }
 
-TTreeMap *RTreeMapImporter::Import() const
+ROOT::Experimental::RTreeMapPainter *RTreeMapImporter::Import() const
 {
-   auto treemap = new TTreeMap();
+   auto treemap = new ROOT::Experimental::RTreeMapPainter();
    const auto insp = ROOT::Experimental::RNTupleInspector::Create(fTupleName, fSourceFileName);
    const auto &descriptor = insp->GetDescriptor();
    const auto rootId = descriptor.GetFieldZero().GetId();

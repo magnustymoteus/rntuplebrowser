@@ -1,4 +1,4 @@
-#include "TTreeMap.hxx"
+#include "RTreeMapPainter.hxx"
 #include "RTreeMapImporter.hxx"
 
 #include <ROOT/RCanvas.hxx>

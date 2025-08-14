@@ -5,7 +5,7 @@
 #ifndef RNTUPLEBROWSER_RTREEMAPIMPORTER_HXX
 #define RNTUPLEBROWSER_RTREEMAPIMPORTER_HXX
 
-#include "TTreeMap.hxx"
+#include "RTreeMapPainter.hxx"
 
 namespace ROOT::Experimental {
 class RTreeMapImporter {
@@ -14,7 +14,7 @@ private:
 
 public:
    static std::unique_ptr<RTreeMapImporter> Create(std::string_view sourceFileName, std::string_view tupleName);
-   TTreeMap *Import() const;
+   RTreeMapPainter *Import() const;
 };
 } // namespace ROOT::Experimental
 

@@ -13,18 +13,20 @@
 
 #include <vector>
 
-class TTreeMap final : public ROOT::Experimental::RTreeMapBase, public TObject {
+namespace ROOT::Experimental {
+class RTreeMapPainter final : public ROOT::Experimental::RTreeMapBase, public TObject {
 public:
    struct Node final : public ROOT::Experimental::RTreeMapBase::Node, public TObject {
    public:
       ClassDef(Node, 1)
    };
-   TTreeMap() = default;
+   RTreeMapPainter() = default;
    void Paint(Option_t *opt) override;
 
-   ClassDefOverride(TTreeMap, 1) private
+   ClassDefOverride(RTreeMapPainter, 1) private
       : void AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const final;
    void AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color = RGBColor(0, 0, 0),
                 bool alignCenter = false) const final;
 };
+}
 #endif

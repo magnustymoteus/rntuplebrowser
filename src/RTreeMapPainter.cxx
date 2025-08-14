@@ -1,7 +1,7 @@
 //
 // Created by patryk on 04.08.25.
 //
-#include "TTreeMap.hxx"
+#include "RTreeMapPainter.hxx"
 
 #include <TCanvas.h>
 #include <TPad.h>
@@ -9,7 +9,7 @@
 #include <TLatex.h>
 #include <TColor.h>
 
-void TTreeMap::Paint(Option_t *)
+void ROOT::Experimental::RTreeMapPainter::Paint(Option_t *)
 {
    if (!gPad)
       return;
@@ -19,7 +19,7 @@ void TTreeMap::Paint(Option_t *)
    DrawTreeMap(fNodes[0], Rect(Vec2(0.025, 0.05), Vec2(0.825, 0.9)), 0);
    DrawLegend();
 }
-void TTreeMap::AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const
+void ROOT::Experimental::RTreeMapPainter::AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const
 {
    auto box = new TBox(rect.fBottomLeft.x, rect.fBottomLeft.y, rect.fTopRight.x, rect.fTopRight.y);
    box->SetFillColor(TColor::GetColor(color.r, color.g, color.b, color.a));
@@ -27,7 +27,7 @@ void TTreeMap::AddBox(const Rect &rect, const RGBColor &color, float borderWidth
    box->SetLineWidth(std::ceil(borderWidth));
    box->Draw("l");
 }
-void TTreeMap::AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color,
+void ROOT::Experimental::RTreeMapPainter::AddText(const Vec2 &pos, const std::string &content, float size, const RGBColor &color,
                        bool alignCenter) const
 {
    TLatex t;
