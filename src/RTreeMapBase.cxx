@@ -44,6 +44,7 @@ static std::string GetDataStr(uint64_t bytes)
    const float finalSize = static_cast<float>(bytes) / std::pow(1000, order);
    return GetFloatStr(finalSize, 2) + unit;
 }
+
 static std::vector<std::pair<std::string, uint64_t>> GetDiskOccupation(const std::vector<RTreeMapBase::Node> &nodes)
 {
    std::unordered_map<std::string, uint64_t> acc;
@@ -83,6 +84,7 @@ static float ComputeWorstRatio(const std::vector<RTreeMapBase::Node> &row, float
    }
    return worstRatio;
 }
+
 static std::vector<std::pair<RTreeMapBase::Node, RTreeMapBase::Rect>>
 SquarifyChildren(const std::vector<RTreeMapBase::Node> &children, RTreeMapBase::Rect rect, bool horizontalRows,
                  uint64_t totalSize)
