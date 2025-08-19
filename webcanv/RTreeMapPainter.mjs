@@ -1,7 +1,8 @@
 import {ObjectPainter, ensureTCanvas} from 'jsroot';
 import RTreeMapTooltip from "./RTreeMapTooltip.mjs";
 
-function computeFnv(str) {
+function computeFnv(str)
+{
    const FNV_offset = 14695981039346656037n;
    const FNV_prime = 1099511628211n;
    let h = FNV_offset;
@@ -377,7 +378,6 @@ class RTreeMapPainter extends ObjectPainter {
       }
       return this;
    }
-   
 }
 
 RTreeMapPainter.draw = function(dom, obj, opt) {
