@@ -1,6 +1,18 @@
 import {ObjectPainter, ensureTCanvas} from 'jsroot';
 import RTreeMapTooltip from "./RTreeMapTooltip.mjs";
 
+function computeFnv(str) {
+   const FNV_offset = 14695981039346656037n;
+   const FNV_prime = 1099511628211n;
+   let h = FNV_offset;
+   for (let i = 0; i < str.length; ++i) {
+      const octet = BigInt(str.charCodeAt(i) & 0xFF);
+      h = h ^ octet;
+      h = h * FNV_prime;
+   }
+   return h;
+}
+
 class RTreeMapPainter extends ObjectPainter {
    static CONSTANTS = {
       STROKE_WIDTH : 0.15,
@@ -82,26 +94,20 @@ class RTreeMapPainter extends ObjectPainter {
                           .map((color) => Math.min(color + RTreeMapPainter.CONSTANTS.COLOR_HOVER_BOOST, 255)));
       let currentMouseX = 0;
       let currentMouseY = 0;
-      const mouseEnter = (event) => {
+      const mouseEnter = () => {
          element.attr('fill', hovered_color);
-         this.tooltip.clearTooltipTimeout();
-         this.tooltip.tooltipTimeout = setTimeout(() => {
-            const tooltipContent = this.tooltip.generateTooltipContent(node);
-            this.tooltip.showTooltip(tooltipContent, currentMouseX, currentMouseY);
-         }, RTreeMapTooltip.CONSTANTS.DELAY);
+         this.tooltip.content = this.tooltip.generateTooltipContent(node);
+         this.tooltip.x = currentMouseX;
+         this.tooltip.y = currentMouseY;
       };
       const mouseLeave = () => {
          element.attr('fill', original_color);
-         this.tooltip.clearTooltipTimeout();
          this.tooltip.hideTooltip();
       };
       const mouseMove = (event) => {
-         currentMouseX = event.pageX;
-         currentMouseY = event.pageY;
-         if (this.tooltip.tooltip && this.tooltip.tooltip.style.opacity === '1') {
-            this.tooltip.clearTooltipTimeout();
-            this.tooltip.hideTooltip();
-         }
+         this.tooltip.x = event.pageX;
+         this.tooltip.y = event.pageY;
+         this.tooltip.showTooltip();
       };
       const click = () => {
          if (node.fNChildren > 0) {
@@ -128,6 +134,7 @@ class RTreeMapPainter extends ObjectPainter {
          'contextmenu' : contextMenu
       });
    }
+
    attachPointerEventsLegend(element, type)
    {
       const rects = this.getG().selectAll("rect");
@@ -145,22 +152,9 @@ class RTreeMapPainter extends ObjectPainter {
       }
    }
 
-   computeFnv(str)
-   {
-      const FNV_offset = 14695981039346656037n;
-      const FNV_prime = 1099511628211n;
-      let h = FNV_offset;
-      for (let i = 0; i < str.length; ++i) {
-         const octet = BigInt(str.charCodeAt(i) & 0xFF);
-         h = h ^ octet;
-         h = h * FNV_prime;
-      }
-      return h;
-   }
-
    computeColor(n)
    {
-      const hash = Number(this.computeFnv(String(n)) & 0xFFFFFFFFn)
+      const hash = Number(computeFnv(String(n)) & 0xFFFFFFFFn)
       const r = (hash >> 16) & 0xFF;
       const g = (hash >> 8) & 0xFF;
       const b = hash & 0xFF;
@@ -355,16 +349,18 @@ class RTreeMapPainter extends ObjectPainter {
          }
       }
    }
+
    createParentIndices()
    {
       const obj = this.getObject();
       this.parentIndices = new Array(obj.fNodes.length).fill(0);
       obj.fNodes.forEach((node, index) => {
          for (let i = node.fChildrenIdx; i < node.fChildrenIdx + node.fNChildren; i++) {
-            this.parentIndices[i] = index
+            this.parentIndices[i] = index;
          }
       })
    }
+
    redraw()
    {
       const obj = this.getObject();
@@ -381,6 +377,7 @@ class RTreeMapPainter extends ObjectPainter {
       }
       return this;
    }
+   
 }
 
 RTreeMapPainter.draw = function(dom, obj, opt) {

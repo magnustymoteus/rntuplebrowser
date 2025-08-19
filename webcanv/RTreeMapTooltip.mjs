@@ -1,11 +1,13 @@
 class RTreeMapTooltip {
-   static CONSTANTS = {DELAY : 1000, OFFSET_X: 10, OFFSET_Y: -10, PADDING: 8, BORDER_RADIUS: 4};
+   static CONSTANTS = {DELAY : 0, OFFSET_X: 10, OFFSET_Y: -10, PADDING: 8, BORDER_RADIUS: 4};
 
    constructor(painter)
    {
       this.painter = painter;
       this.tooltip = null;
-      this.tooltipTimeout = null;
+      this.content = "";
+      this.x = 0;
+      this.y = 0;
    }
 
    createTooltip()
@@ -31,14 +33,14 @@ class RTreeMapTooltip {
       document.body.appendChild(this.tooltip);
    }
 
-   showTooltip(content, x, y)
+   showTooltip()
    {
       if (!this.tooltip)
          this.createTooltip();
 
-      this.tooltip.innerHTML = content;
-      this.tooltip.style.left = (x + RTreeMapTooltip.CONSTANTS.OFFSET_X) + 'px';
-      this.tooltip.style.top = (y + RTreeMapTooltip.CONSTANTS.OFFSET_Y) + 'px';
+      this.tooltip.innerHTML = this.content;
+      this.tooltip.style.left = (this.x + RTreeMapTooltip.CONSTANTS.OFFSET_X) + 'px';
+      this.tooltip.style.top = (this.y + RTreeMapTooltip.CONSTANTS.OFFSET_Y) + 'px';
       this.tooltip.style.opacity = '1';
    }
 
@@ -46,14 +48,6 @@ class RTreeMapTooltip {
    {
       if (this.tooltip) {
          this.tooltip.style.opacity = '0';
-      }
-   }
-
-   clearTooltipTimeout()
-   {
-      if (this.tooltipTimeout) {
-         clearTimeout(this.tooltipTimeout);
-         this.tooltipTimeout = null;
       }
    }
 
