@@ -21,21 +21,23 @@ void ROOT::Experimental::RTreeMapPainter::Paint(Option_t *)
    DrawTreeMap(fNodes[0], Rect(Vec2(0.025, 0.05), Vec2(0.825, 0.9)), 0);
    DrawLegend();
 }
+
 void ROOT::Experimental::RTreeMapPainter::AddBox(const Rect &rect, const RGBColor &color, float borderWidth) const
 {
    auto box = new TBox(rect.fBottomLeft.x, rect.fBottomLeft.y, rect.fTopRight.x, rect.fTopRight.y);
    box->SetFillColor(TColor::GetColor(color.r, color.g, color.b, color.a));
    box->SetLineColor(kGray);
    box->SetLineWidth(std::ceil(borderWidth));
-   box->Draw("l");
+   gPad->Add(box, "l");
 }
+
 void ROOT::Experimental::RTreeMapPainter::AddText(const Vec2 &pos, const std::string &content, float size,
                                                   const RGBColor &color, bool alignCenter) const
 {
-   TLatex t;
-   t.SetTextFont(42);
-   t.SetTextSize(size);
-   t.SetTextAlign((alignCenter) ? 22 : 13);
-   t.SetTextColor(TColor::GetColor(color.r, color.g, color.b, color.a));
-   t.DrawLatex(pos.x, pos.y, content.c_str());
+   auto t = new TLatex(pos.x, pos.y, content.c_str());
+   t->SetTextFont(42);
+   t->SetTextSize(size);
+   t->SetTextAlign((alignCenter) ? 22 : 13);
+   t->SetTextColor(TColor::GetColor(color.r, color.g, color.b, color.a));
+   gPad->Add(t);
 }

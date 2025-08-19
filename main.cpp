@@ -1,5 +1,4 @@
 #include "RTreeMapPainter.hxx"
-#include "RTreeMapImporter.hxx"
 
 #include <ROOT/RCanvas.hxx>
 #include <ROOT/RBrowser.hxx>
@@ -20,9 +19,9 @@ void DisplayCanvas(bool disableJs=false)
   TWebCanvas::AddCustomClass("ROOT::Experimental::RTreeMapPainter");
   TWebCanvas::SetCustomScripts("modules:webcanv/RTreeMapPainter.mjs");
   }
-  auto importer = ROOT::Experimental::RTreeMapImporter::Create(kFileName, kTupleName);
+  auto tm = ROOT::Experimental::RTreeMapPainter::Import(kFileName, kTupleName);
   auto c = new TCanvas("c_tm","TreeMap");
-  c->Add(importer->Import());
+  c->Add(tm.release());
 }
 int main(int argc, char **argv)
 {

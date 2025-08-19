@@ -16,6 +16,8 @@
 namespace ROOT::Experimental {
 class RTreeMapPainter final : public ROOT::Experimental::RTreeMapBase, public TObject {
 public:
+   static std::unique_ptr<RTreeMapPainter> Import(std::string_view sourceFileName, std::string_view tupleName);
+
    struct Node final : public ROOT::Experimental::RTreeMapBase::Node, public TObject {
    public:
       ClassDef(Node, 1);

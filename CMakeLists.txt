@@ -8,7 +8,6 @@ link_directories(${ROOT_LIBRARY_DIRS})
 
 set(TREEMAP_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapPainter.hxx
         ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapBase.hxx
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc/RTreeMapImporter.hxx
 )
 set(TREEMAP_LINKDEF  ${CMAKE_CURRENT_SOURCE_DIR}/inc/LinkDef.h)
 
